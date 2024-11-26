@@ -60,9 +60,6 @@ class UserAccount(AbstractUser):
     first_name = models.CharField(max_length=30, null=True, blank=True)
     last_name = models.CharField(max_length=150, null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_ENUM, default='customer')
-
-
-
     objects = UserManager()
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
