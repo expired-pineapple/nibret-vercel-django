@@ -65,29 +65,8 @@ def index(request):
 
 This view is exposed a URL through `example/urls.py`:
 
-```python
-# example/urls.py
-from django.urls import path
-
-from example.views import index
-
-
-urlpatterns = [
-    path('', index),
-]
-```
-
 Finally, it's made accessible to the Django server inside `api/urls.py`:
 
-```python
-# api/urls.py
-from django.urls import path, include
-
-urlpatterns = [
-    ...
-    path('', include('example.urls')),
-]
-```
 
 This example uses the Web Server Gateway Interface (WSGI) with Django to enable handling requests on Vercel with Serverless Functions.
 
