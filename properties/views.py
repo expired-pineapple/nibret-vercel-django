@@ -71,7 +71,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
+class HomeLoanViewSet(viewsets.ModelViewSet):
+    queryset=HomeLoan.objects.all()
+    serializer_class = HomeLoanSerializer
+    permission_classes = [PropertyPermission]
 
 
 class ImageViewSet(viewsets.ModelViewSet):

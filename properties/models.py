@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 
-from authentication.models import UserAccount
+# from authentication.models import UserAccount
     
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -13,8 +13,7 @@ class Location(models.Model):
 
     def __str__(self):
         return self.name
-    
-
+        
 class Loaners(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    logo = models.CharField(max_length=255) 
@@ -24,6 +23,22 @@ class Loaners(models.Model):
 
    def __str__(self) -> str:
        return self.name
+
+class Criteria(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   description = models.TextField()
+
+
+class HomeLoan(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   name = models.CharField(max_length=255) 
+   description = models.TextField()
+   loaner = models.ForeignKey(Loaners,on_delete=models.CASCADE,  related_name="loaner")
+   criterias = models.ForeignKey(Criteria, on_delete=models.CASCADE, related_name="home_loan")
+   
+   def __str__(self):
+        return self.name
+
 
 class Property(models.Model):
 
@@ -50,7 +65,7 @@ class Property(models.Model):
     type = models.CharField(max_length=255, null=True, blank=True)
     move_in_date = models.DateTimeField(null=True, blank=True)
     rental = models.BooleanField(default=False)
-    created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties')
+    # created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,7 +127,7 @@ class Auction(models.Model):
 
 class Wishlist(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
-    user =  models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='wishlist')
+    # user =  models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='wishlist')
     property = models.ManyToManyField(Property, related_name='property_wishlist', blank=True) 
     auctions = models.ManyToManyField(Auction, related_name='auction_wishlist', blank=True) 
    
@@ -123,7 +138,7 @@ class Wishlist(models.Model):
 class Reviews(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
     rating = models.FloatField(default=0.0)
-    user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
+    # user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
     review = models.TextField()
 
@@ -145,7 +160,7 @@ class RequestedTour(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     date = models.DateTimeField()
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='tours')
+    # user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='tours')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='tours')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

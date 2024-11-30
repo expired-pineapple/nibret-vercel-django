@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AuctionImage, LoanerProperty, Location, Property, Image, Amenties, Auction, Wishlist, Reviews, RequestedTour, Loaners
+from .models import AuctionImage, Criteria, HomeLoan, LoanerProperty, Location, Property, Image, Amenties, Auction, Wishlist, Reviews, RequestedTour, Loaners
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -10,7 +10,12 @@ class LocationSerializer(serializers.ModelSerializer):
 class LoanersPropertySerializer(serializers.ModelSerializer):
     class Meta: 
         model = LoanerProperty
+    
 
+class CriteriaSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Criteria
+        fields='__all__'
 
 class ImageSerializer(serializers.ModelSerializer):
     property = serializers.UUIDField(read_only=True)
@@ -206,3 +211,19 @@ class TourSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestedTour
         fields = '__all__'
+
+class HomeLoanSerializer(serializers.ModelSerializer):
+    loaner = LoanerSerializer(read_only=True)
+    criterias = CriteriaSerializer()
+
+    class Meta:
+        model = HomeLoan
+        fields = '__all__'
+
+    def create(self, validated_data):
+        criterias_data = validated_data.pop('criterias')
+        loaner = validated_data.pop('loaner')
+        criteria = Criteria.objects.create(**criterias_data)
+        home_loan = HomeLoan.objects.create(loaner=loaner, criterias=criteria, **validated_data)
+        return home_loan
+    
