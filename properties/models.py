@@ -1,7 +1,8 @@
 import uuid
 from django.db import models
 
-# from authentication.models import UserAccount
+from authentication.models import UserAccount
+
     
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -65,7 +66,7 @@ class Property(models.Model):
     type = models.CharField(max_length=255, null=True, blank=True)
     move_in_date = models.DateTimeField(null=True, blank=True)
     rental = models.BooleanField(default=False)
-    # created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties')
+    created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -127,7 +128,7 @@ class Auction(models.Model):
 
 class Wishlist(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
-    # user =  models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='wishlist')
+    user =  models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='wishlist')
     property = models.ManyToManyField(Property, related_name='property_wishlist', blank=True) 
     auctions = models.ManyToManyField(Auction, related_name='auction_wishlist', blank=True) 
    
@@ -160,7 +161,7 @@ class RequestedTour(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     date = models.DateTimeField()
-    # user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='tours')
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='tours')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='tours')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

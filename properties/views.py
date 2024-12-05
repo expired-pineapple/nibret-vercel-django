@@ -16,7 +16,7 @@ class LocationViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    permission_classes = [PropertyPermission]
+    # permission_classes = [PropertyPermission]
 
 
     def get_queryset(self):
