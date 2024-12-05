@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'rest_framework_simplejwt',
 
+     'corsheaders',
+
     'authentication',
     'properties'
 ]
@@ -161,3 +163,6 @@ SIMPLE_JWT = {
 
 JWT_AUTH_SECURE = False
 JWT_AUTH_SAMESITE = 'Lax'
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS=['*']
