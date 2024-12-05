@@ -11,6 +11,4 @@ urlpatterns = [
     path('accounts/',  include(authentication_urls)),
     path('accounts/registration/', include('dj_rest_auth.registration.urls')),
     path('',  include(property_urls)),
-    path('accounts/token/refresh/', get_refresh_view().as_view(), name='token_refresh'),
-    path('accounts/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]

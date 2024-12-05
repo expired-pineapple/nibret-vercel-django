@@ -7,5 +7,4 @@ from authentication.views import (
 
 urlpatterns = [
     path('google/', GoogleLogin.as_view(), name='google_login'),
-    # Add your other URL patterns here
 ]
