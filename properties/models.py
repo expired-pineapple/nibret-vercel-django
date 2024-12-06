@@ -58,7 +58,7 @@ class Property(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='property')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='property')
     price = models.FloatField()
     discount = models.FloatField(null=True, blank=True, default=0)
     sold_out = models.BooleanField(default=False)
@@ -139,7 +139,7 @@ class Wishlist(models.Model):
 class Reviews(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
     rating = models.FloatField(default=0.0)
-    # user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
+    user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
     review = models.TextField()
 
