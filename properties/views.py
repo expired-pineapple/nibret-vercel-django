@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.db import transaction
+from django.db.models import Q
 from properties.serializers import *
 from properties.permissions import *
 
@@ -30,10 +30,31 @@ class PropertyViewSet(viewsets.ModelViewSet):
         # Filter by price range
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
+        name = self.request.query_params.get('name', None)
+        general_search = self.request.query_params.get('search', None)
+        if name:
+            queryset = queryset.filter(name=name)
+
+        if general_search:
+            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search) | Q(location__name__icontains=general_search))
         if min_price:
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
+        bedroom = self.request.query_params.get('bedroom', None)
+        if bedroom and bedroom !="Any":
+            queryset = queryset = queryset.filter(amenties__bedroom__gte = int(bedroom))
+
+        bathroom = self.request.query_params.get('bathroom', None)
+        if bathroom and bathroom !="Any":
+            queryset = queryset = queryset.filter(amenties__bathroom__gte = int(bathroom))
+        
+        area = self.request.query_params.get('area', None)
+        if area and area !="Any":
+            queryset = queryset = queryset.filter(amenties__area__gte = int(area))
+        
+        
+        
 
         # Filter by location
         latitude = self.request.query_params.get('latitude', None)
