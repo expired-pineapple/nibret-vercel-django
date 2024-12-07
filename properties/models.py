@@ -38,7 +38,7 @@ class HomeLoan(models.Model):
 class Criteria(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    description = models.TextField()
-   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria")
+   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria", null=True, blank=True)
 
 
 class Property(models.Model):
