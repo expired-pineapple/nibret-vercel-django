@@ -213,6 +213,7 @@ class TourSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HomeLoanSerializer(serializers.ModelSerializer):
+
     loaner = LoanerSerializer()
     criteria = CriteriaSerializer(many=True)
 
