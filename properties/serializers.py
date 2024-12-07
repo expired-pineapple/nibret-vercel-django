@@ -214,7 +214,7 @@ class TourSerializer(serializers.ModelSerializer):
 
 class HomeLoanSerializer(serializers.ModelSerializer):
     loaner = LoanerSerializer(read_only=True)
-    criterias = CriteriaSerializer()
+    criterias = CriteriaSerializer(many=True)
 
     class Meta:
         model = HomeLoan
