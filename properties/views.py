@@ -95,7 +95,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 class HomeLoanViewSet(viewsets.ModelViewSet):
     queryset=HomeLoan.objects.all()
     serializer_class = HomeLoanSerializer
-    permission_classes = [PropertyPermission]
+    # permission_classes = [PropertyPermission]
 
 
 class ImageViewSet(viewsets.ModelViewSet):
