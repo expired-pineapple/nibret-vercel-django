@@ -17,7 +17,7 @@ class Location(models.Model):
         
 class Loaners(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   logo = models.CharField(max_length=255) 
+   logo = models.CharField(max_length=255, null=True, blank=True) 
    name = models.CharField(max_length=255) 
    real_state_provided = models.BooleanField(default=False)
    phone = models.CharField(max_length=255, null=True, blank=True) 
@@ -25,20 +25,20 @@ class Loaners(models.Model):
    def __str__(self) -> str:
        return self.name
 
-class Criteria(models.Model):
-   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   description = models.TextField()
-
 
 class HomeLoan(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    name = models.CharField(max_length=255) 
    description = models.TextField()
-   loaner = models.ForeignKey(Loaners,on_delete=models.CASCADE,  related_name="loaner")
-   criterias = models.ForeignKey(Criteria, on_delete=models.CASCADE, related_name="home_loan")
+   loaner = models.ForeignKey(Loaners, on_delete=models.CASCADE,  related_name="loaners")
    
    def __str__(self):
         return self.name
+
+class Criteria(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   description = models.TextField()
+   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria")
 
 
 class Property(models.Model):
@@ -72,6 +72,7 @@ class Property(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class LoanerProperty(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
