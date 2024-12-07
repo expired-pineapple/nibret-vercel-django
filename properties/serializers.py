@@ -213,17 +213,21 @@ class TourSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HomeLoanSerializer(serializers.ModelSerializer):
-    loaner = LoanerSerializer(read_only=True)
-    criterias = CriteriaSerializer()
+    loaner = LoanerSerializer()
+    criteria = CriteriaSerializer(many=True)
 
     class Meta:
         model = HomeLoan
         fields = '__all__'
 
     def create(self, validated_data):
-        criterias_data = validated_data.pop('criterias')
+        criterias_data = validated_data.pop('criteria')
         loaner = validated_data.pop('loaner')
-        criteria = Criteria.objects.create(**criterias_data)
-        home_loan = HomeLoan.objects.create(loaner=loaner, criterias=criteria, **validated_data)
+        criteria=[]
+        loaners=Loaners.objects.create(**loaner)
+        home_loan = HomeLoan.objects.create(loaner=loaners, **validated_data)
+        for c in criterias_data:
+            cr = Criteria.objects.create(**c, loan=home_loan)
+            criteria.push(cr)
         return home_loan
     
