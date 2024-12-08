@@ -65,7 +65,68 @@ class PropertyViewSet(viewsets.ModelViewSet):
             pass
 
         return queryset
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def search(self, request):
+        queryset = Property.objects.all()
+        
+        # Filter by type (handling array)
+        property_types = request.data.get('type')
+        if property_types and isinstance(property_types, list):
+            queryset = queryset.filter(type__in=property_types)
 
+        # Filter by price range and name
+        min_price = request.data.get('min_price')
+        max_price = request.data.get('max_price')
+        name = request.data.get('name')
+        general_search = request.data.get('search')
+
+        if name:
+            queryset = queryset.filter(name__iexact=name)
+
+        if general_search:
+            queryset = queryset.filter(
+                Q(name__icontains=general_search) | 
+                Q(description__icontains=general_search) | 
+                Q(location__name__icontains=general_search)
+            )
+
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        # Filter by amenities
+        bedroom = request.data.get('bedroom')
+        if bedroom and bedroom != "Any":
+            queryset = queryset.filter(amenties__bedroom__gte=int(bedroom))
+
+        bathroom = request.data.get('bathroom')
+        if bathroom and bathroom != "Any":
+            queryset = queryset.filter(amenties__bathroom__gte=int(bathroom))
+
+        area = request.data.get('area')
+        if area and area != "Any":
+            queryset = queryset.filter(amenties__area__gte=int(area))
+
+        # Filter by location
+        latitude = request.data.get('latitude')
+        longitude = request.data.get('longitude')
+        radius = request.data.get('radius', 10)  # Default radius 10 meters
+        
+        if latitude and longitude:
+            # Convert radius from meters to degrees (approximate)
+            radius_degrees = float(radius) / 111000  # 1 degree ≈ 111km
+            
+            queryset = queryset.filter(
+                location__latitude__gte=float(latitude) - radius_degrees,
+                location__latitude__lte=float(latitude) + radius_degrees,
+                location__longitude__gte=float(longitude) - radius_degrees,
+                location__longitude__lte=float(longitude) + radius_degrees
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     @action(detail=False, methods=['get'])
     def auctions(self, request, *args, **kwargs):
         auctions = self.get_queryset().filter(is_auction=True)
