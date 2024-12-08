@@ -66,16 +66,14 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         return queryset
     
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
         
-        # Filter by type (handling array)
         property_types = request.data.get('type')
         if property_types and isinstance(property_types, list):
             queryset = queryset.filter(type__in=property_types)
 
-        # Filter by price range and name
         min_price = request.data.get('min_price')
         max_price = request.data.get('max_price')
         name = request.data.get('name')
@@ -96,7 +94,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
 
-        # Filter by amenities
         bedroom = request.data.get('bedroom')
         if bedroom and bedroom != "Any":
             queryset = queryset.filter(amenties__bedroom__gte=int(bedroom))
@@ -112,10 +109,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
         # Filter by location
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
-        radius = request.data.get('radius', 10)  # Default radius 10 meters
+        radius = request.data.get('radius', 10) 
         
         if latitude and longitude:
-            # Convert radius from meters to degrees (approximate)
             radius_degrees = float(radius) / 111000  # 1 degree ≈ 111km
             
             queryset = queryset.filter(
