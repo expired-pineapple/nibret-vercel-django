@@ -7,8 +7,8 @@ from authentication.models import UserAccount
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255) 
-    longitude = models.DecimalField(max_digits=15, decimal_places=20)
-    latitude = models.DecimalField(max_digits=15, decimal_places=20)
+    longitude = models.DecimalField(max_digits=25, decimal_places=20)
+    latitude = models.DecimalField(max_digits=25, decimal_places=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
