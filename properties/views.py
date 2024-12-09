@@ -97,6 +97,16 @@ class HomeLoanViewSet(viewsets.ModelViewSet):
     serializer_class = HomeLoanSerializer
     # permission_classes = [PropertyPermission]
 
+    def get_queryset(self):
+        queryset = HomeLoan.objects.all()
+        
+        general_search = self.request.query_params.get('search', None)
+        if general_search:
+            print(general_search)
+            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search))
+        return queryset
+    
+
 
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
@@ -134,7 +144,14 @@ class AuctionViewSet(viewsets.ModelViewSet):
     queryset = Auction.objects.all()
     serializer_class = AuctionSerializer
     # permission_classes = [IsAuthenticated]
-
+    def get_queryset(self):
+        queryset = Auction.objects.all()
+        
+        general_search = self.request.query_params.get('search', None)
+        if general_search:
+            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search) | Q(location__name__icontains=general_search))
+        return queryset
+    
     @action(detail=True, methods=['post'])
     def place_bid(self, request, pk=None):
         auction = self.get_object()
