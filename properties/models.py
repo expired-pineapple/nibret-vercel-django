@@ -66,7 +66,7 @@ class Property(models.Model):
     type = models.CharField(max_length=255, null=True, blank=True)
     move_in_date = models.DateTimeField(null=True, blank=True)
     rental = models.BooleanField(default=False)
-    created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties')
+    created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -87,7 +87,7 @@ class LoanerProperty(models.Model):
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     is_cover = models.BooleanField(default=False)
-    image_url = models.CharField(max_length=255)
+    image_url = models.TextField(null=True, blank=True)
     blur_hash = models.CharField(max_length=255, default="blurHash")
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='pictures')
 
