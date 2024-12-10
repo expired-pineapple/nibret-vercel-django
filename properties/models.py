@@ -35,9 +35,6 @@ class HomeLoan(models.Model):
    def __str__(self):
         return self.name
 
-   class Meta:
-       ordering = ['-created_at']
-
 class Criteria(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    description = models.TextField()
@@ -86,8 +83,6 @@ class LoanerProperty(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='loaners', null=True, blank=True)
     description = description = models.TextField(null=True, blank=True)
 
-    class Meta:
-       ordering = ['-created_at']
 
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -111,9 +106,6 @@ class Amenties(models.Model):
 
     def __str__(self):
         return f"Amenities for {self.property.name}"
-    
-    class Meta:
-       ordering = ['-created_at']
 
 class Auction(models.Model):
     STATUS_CHOICES = [
@@ -160,9 +152,6 @@ class Reviews(models.Model):
     user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
     review = models.TextField()
-
-    class Meta:
-       ordering = ['-created_at']
 
 class AuctionImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
