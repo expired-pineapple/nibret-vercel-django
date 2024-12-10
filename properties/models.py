@@ -72,6 +72,9 @@ class Property(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+       ordering = ['-created_at']
 
 
 class LoanerProperty(models.Model):
@@ -79,6 +82,10 @@ class LoanerProperty(models.Model):
     loaner  = models.ForeignKey(Loaners, on_delete=models.CASCADE, related_name='property')
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='loaners', null=True, blank=True)
     description = description = models.TextField(null=True, blank=True)
+
+    class Meta:
+       ordering = ['-created_at']
+
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     is_cover = models.BooleanField(default=False)
@@ -88,6 +95,9 @@ class Image(models.Model):
 
     def __str__(self):
         return f"Image for {self.property.name}"
+    
+    class Meta:
+       ordering = ['-created_at']
 
 class Amenties(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -100,6 +110,9 @@ class Amenties(models.Model):
 
     def __str__(self):
         return f"Amenities for {self.property.name}"
+    
+    class Meta:
+       ordering = ['-created_at']
 
 class Auction(models.Model):
     STATUS_CHOICES = [
@@ -125,6 +138,7 @@ class Auction(models.Model):
 
     class Meta:
         verbose_name_plural = "Auctions"
+        ordering = ['-created_at']
 
 
 class Wishlist(models.Model):
@@ -136,6 +150,8 @@ class Wishlist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+       ordering = ['-created_at']
 
 class Reviews(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
@@ -143,6 +159,9 @@ class Reviews(models.Model):
     user =  models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
     review = models.TextField()
+
+    class Meta:
+       ordering = ['-created_at']
 
 class AuctionImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -169,3 +188,7 @@ class RequestedTour(models.Model):
 
     def __str__(self):
         return f"Tour saved by {self.user.username}-{self.properties.name}"
+
+    class Meta:
+       ordering = ['-created_at']
+

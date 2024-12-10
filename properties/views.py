@@ -52,19 +52,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
         area = self.request.query_params.get('area', None)
         if area and area !="Any":
             queryset = queryset = queryset.filter(amenties__area__gte = int(area))
-        
-        
-        
-
-        # Filter by location
-        latitude = self.request.query_params.get('latitude', None)
-        longitude = self.request.query_params.get('longitude', None)
-        radius = self.request.query_params.get('radius', None)
-        if all([latitude, longitude, radius]):
-            # Add location-based filtering logic here
-            pass
-
         return queryset
+
     
     @action(detail=False, methods=['post'])
     def search(self, request):
@@ -113,7 +102,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         area = request.data.get('area')
         if area and area != "Any":
             queryset = queryset.filter(amenties__area__gte=int(area))
-
+            
         # Filter by location
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
@@ -136,7 +125,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-   
+
     @action(detail=False, methods=['get'])
     def auctions(self, request, *args, **kwargs):
         auctions = self.get_queryset().filter(is_auction=True)
