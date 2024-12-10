@@ -213,6 +213,7 @@ class TourSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HomeLoanSerializer(serializers.ModelSerializer):
+
     loaner = LoanerSerializer()
     criteria = CriteriaSerializer(many=True)
 
@@ -228,6 +229,6 @@ class HomeLoanSerializer(serializers.ModelSerializer):
         home_loan = HomeLoan.objects.create(loaner=loaners, **validated_data)
         for c in criterias_data:
             cr = Criteria.objects.create(**c, loan=home_loan)
-            criteria.push(cr)
+            criteria.append(cr)
         return home_loan
     

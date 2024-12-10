@@ -7,8 +7,8 @@ from authentication.models import UserAccount
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255) 
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=25, decimal_places=20)
+    latitude = models.DecimalField(max_digits=25, decimal_places=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -38,7 +38,7 @@ class HomeLoan(models.Model):
 class Criteria(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    description = models.TextField()
-   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria")
+   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria", null=True, blank=True)
 
 
 class Property(models.Model):
@@ -188,6 +188,7 @@ class RequestedTour(models.Model):
 
     def __str__(self):
         return f"Tour saved by {self.user.username}-{self.properties.name}"
-    
+
     class Meta:
        ordering = ['-created_at']
+

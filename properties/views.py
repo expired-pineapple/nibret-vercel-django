@@ -52,19 +52,27 @@ class PropertyViewSet(viewsets.ModelViewSet):
         area = self.request.query_params.get('area', None)
         if area and area !="Any":
             queryset = queryset = queryset.filter(amenties__area__gte = int(area))
-        
-        
         return queryset
+
+    
     @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
-        
-        property_types = request.data.get('type')
-        if property_types and isinstance(property_types, list):
-            queryset = queryset.filter(type__in=property_types)
+    
+        property_type = request.data.get('type')
+        if property_type:
+            if isinstance(property_type, list):
+                queryset = queryset.filter(type__in=property_type)
+            else:
+                queryset = queryset.filter(type=property_type)
 
-        min_price = request.data.get('min_price')
-        max_price = request.data.get('max_price')
+        try:
+            min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
+            max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
+        except (ValueError, TypeError):
+            min_price = None
+            max_price = None
+
         name = request.data.get('name')
         general_search = request.data.get('search')
 
@@ -78,9 +86,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 Q(location__name__icontains=general_search)
             )
 
-        if min_price:
+        if min_price is not None:
             queryset = queryset.filter(price__gte=min_price)
-        if max_price:
+        if max_price is not None:
             queryset = queryset.filter(price__lte=max_price)
 
         bedroom = request.data.get('bedroom')
@@ -94,24 +102,30 @@ class PropertyViewSet(viewsets.ModelViewSet):
         area = request.data.get('area')
         if area and area != "Any":
             queryset = queryset.filter(amenties__area__gte=int(area))
-
+            
         # Filter by location
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
         radius = request.data.get('radius', 10) 
         
         if latitude and longitude:
-            radius_degrees = float(radius) / 111000  # 1 degree ≈ 111km
-            
-            queryset = queryset.filter(
-                location__latitude__gte=float(latitude) - radius_degrees,
-                location__latitude__lte=float(latitude) + radius_degrees,
-                location__longitude__gte=float(longitude) - radius_degrees,
-                location__longitude__lte=float(longitude) + radius_degrees
-            )
+            try:
+                radius_degrees = float(radius) / 111000  # 1 degree ≈ 111km
+                lat = float(latitude)
+                lng = float(longitude)
+                        
+                queryset = queryset.filter(
+                    location__latitude__gte=lat - radius_degrees,
+                    location__latitude__lte=lat + radius_degrees,
+                    location__longitude__gte=lng - radius_degrees,
+                    location__longitude__lte=lng + radius_degrees
+                )
+            except (ValueError, TypeError):
+                pass
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
     @action(detail=False, methods=['get'])
     def auctions(self, request, *args, **kwargs):
         auctions = self.get_queryset().filter(is_auction=True)
@@ -142,6 +156,16 @@ class HomeLoanViewSet(viewsets.ModelViewSet):
     queryset=HomeLoan.objects.all()
     serializer_class = HomeLoanSerializer
     # permission_classes = [PropertyPermission]
+
+    def get_queryset(self):
+        queryset = HomeLoan.objects.all()
+        
+        general_search = self.request.query_params.get('search', None)
+        if general_search:
+            print(general_search)
+            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search))
+        return queryset
+    
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -180,7 +204,14 @@ class AuctionViewSet(viewsets.ModelViewSet):
     queryset = Auction.objects.all()
     serializer_class = AuctionSerializer
     # permission_classes = [IsAuthenticated]
-
+    def get_queryset(self):
+        queryset = Auction.objects.all()
+        
+        general_search = self.request.query_params.get('search', None)
+        if general_search:
+            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search) | Q(location__name__icontains=general_search))
+        return queryset
+    
     @action(detail=True, methods=['post'])
     def place_bid(self, request, pk=None):
         auction = self.get_object()
