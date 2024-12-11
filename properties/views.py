@@ -125,12 +125,14 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    @action(detail=False, methods=['POST'])
+    def discount(self, request, pk=None):
+        discount={"discount":self.request.data.get("discount")}
+        property = Property.objects.filter(pk=self.request.data.get("id")).update(**discount)
 
-    @action(detail=False, methods=['get'])
-    def auctions(self, request, *args, **kwargs):
-        auctions = self.get_queryset().filter(is_auction=True)
-        serializer = self.get_serializer(auctions, many=True)
-        return Response(serializer.data)
+        return Response({"detail": "Updated successfully"}, status=status.HTTP_200_OK)
+        # return Response(serializer.data)
+
 
     def create(self, request, *args, **kwargs):
         try:
