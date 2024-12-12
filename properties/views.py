@@ -306,10 +306,11 @@ class WishlistViewSet(viewsets.ModelViewSet):
 class RequestedTourViewSet(viewsets.ModelViewSet):
     queryset = RequestedTour.objects.all() 
     serializer_class = TourSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        
+        return self.queryset.filter()
     
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
