@@ -303,28 +303,3 @@ class WishlistViewSet(viewsets.ModelViewSet):
                 {"error": f"An error occurred: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-class RequestedTourViewSet(viewsets.ModelViewSet):
-    queryset = RequestedTour.objects.all() 
-    serializer_class = TourSerializer
-    # permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        
-        return self.queryset.filter()
-    
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        data['user'] = request.user.id 
-        
-        print("Request data:", data)
-        print("User ID:", request.user.id)
-
-        serializer = self.get_serializer(data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        tour = serializer.save()
-
-        tour.refresh_from_db()
-        serializer = self.get_serializer(tour)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response({"detail": serializer.data}, status=status.HTTP_201_CREATED, headers=headers)

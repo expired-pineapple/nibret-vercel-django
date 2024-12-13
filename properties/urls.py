@@ -10,7 +10,7 @@ router.register(r'images', ImageViewSet)
 router.register(r'amenities', AmentiesViewSet)
 router.register(r'auctions', AuctionViewSet)
 router.register(r'wishlist', WishlistViewSet)
-router.register(r'tour', RequestedTourViewSet)
+
 router.register(r'home-loan', HomeLoanViewSet)
 
 urlpatterns = [
