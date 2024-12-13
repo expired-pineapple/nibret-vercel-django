@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import AuctionImage, Criteria, HomeLoan, LoanerProperty, Location, Property, Image, Amenties, Auction, Wishlist, Reviews, RequestedTour, Loaners
+
+from authentication.serializers import UserAccountSerialzer
+from .models import AuctionImage, Criteria, HomeLoan, LoanerProperty, Location, Property, Image, Amenties, Auction, Wishlist, Reviews, Loaners
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -137,22 +139,21 @@ class PropertySerializer(serializers.ModelSerializer):
         image_data = validated_data.pop('pictures')
         loaners_data = validated_data.pop('loaners', [])
         
-        # Create location first
         location = Location.objects.create(**location_data)
         
-        # Create property
+
         property = Property.objects.create(location=location, **validated_data)
         
-        # Create amenities with property reference
+
         amenties_data['property'] = property
         Amenties.objects.create(**amenties_data)
 
-        # Handle images
+
         for image in image_data:
             image['property'] = property
             Image.objects.create(**image)
         
-        # Handle loaners
+
         for loaner_data in loaners_data:
             loaner, _ = Loaners.objects.get_or_create(
                 name=loaner_data['name'],
@@ -166,6 +167,17 @@ class PropertySerializer(serializers.ModelSerializer):
         return property
 
     def update(self, instance, validated_data):
+        if 'pictures' in validated_data:
+            pictures_data = validated_data.pop('pictures')
+            for picture_data in pictures_data:
+                picture, _ = Image.objects.get_or_create(
+                    image_url=picture_data['image_url'],
+                    defaults={
+                        'blur_hash': picture_data.get('blur_hash', ''),
+                        'is_cover': picture_data.get('is_cover', False)
+                    }
+                )
+                instance.pictures.add(picture)
         if 'location' in validated_data:
             location_data = validated_data.pop('location')
             Location.objects.filter(id=instance.location.id).update(**location_data)
@@ -186,8 +198,19 @@ class PropertySerializer(serializers.ModelSerializer):
                     }
                 )
                 instance.loaners.add(loaner)
-            
-        return super().update(instance, validated_data)
+        print("______________VAIDATED DATA______________________")
+        print(validated_data, "____________________________________")
+        property = Property.objects.filter(id=instance.id).update(
+                name = validated_data.pop('name'),
+                description = validated_data.pop('description'),
+                price = validated_data.pop('price'),
+                discount = validated_data.pop('discount'),
+                type = validated_data.pop('type'),
+                move_in_date = validated_data.pop('move_in_date'),
+                rental = validated_data.pop('rental')
+        )
+        property_get = Property.objects.get(pk=instance.id)
+        return property_get
     
 
 
@@ -206,11 +229,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Reviews
         fields = '__all__'
 
-
-class TourSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RequestedTour
-        fields = '__all__'
 
 class HomeLoanSerializer(serializers.ModelSerializer):
 
