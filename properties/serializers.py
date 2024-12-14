@@ -166,51 +166,59 @@ class PropertySerializer(serializers.ModelSerializer):
         
         return property
 
-    def update(self, instance, validated_data):
-        if 'pictures' in validated_data:
-            pictures_data = validated_data.pop('pictures')
-            for picture_data in pictures_data:
-                picture, _ = Image.objects.get_or_create(
+def update(self, instance, validated_data):
+    if 'pictures' in validated_data:
+        pictures_data = validated_data.pop('pictures')
+
+        for picture_data in pictures_data:
+            existing_images = Image.objects.filter(image_url=picture_data['image_url'])
+            
+            if existing_images.exists():
+                existing_image = existing_images.first()
+                existing_image.blur_hash = picture_data.get('blur_hash', existing_image.blur_hash)
+                existing_image.is_cover = picture_data.get('is_cover', existing_image.is_cover)
+                existing_image.save()
+                
+                
+                if existing_image not in instance.pictures.all():
+                    instance.pictures.add(existing_image)
+            else:
+               
+                new_image = Image.objects.create(
+                    property=instance,
                     image_url=picture_data['image_url'],
-                    defaults={
-                        'blur_hash': picture_data.get('blur_hash', ''),
-                        'is_cover': picture_data.get('is_cover', False)
-                    }
+                    blur_hash=picture_data.get('blur_hash', ''),
+                    is_cover=picture_data.get('is_cover', False)
                 )
-                instance.pictures.add(picture)
-        if 'location' in validated_data:
-            location_data = validated_data.pop('location')
-            Location.objects.filter(id=instance.location.id).update(**location_data)
-        
-        if 'amenties' in validated_data:
-            amenties_data = validated_data.pop('amenties')
-            Amenties.objects.filter(property=instance).update(**amenties_data)
-        
-        if 'loaners' in validated_data:
-            loaners_data = validated_data.pop('loaners')
-            instance.loaners.clear()
-            for loaner_data in loaners_data:
-                loaner, _ = Loaners.objects.get_or_create(
-                    name=loaner_data['name'],
-                    defaults={
-                        'logo': loaner_data.get('logo', ''),
-                        'real_state_provided': loaner_data.get('real_state_provided', False)
-                    }
-                )
-                instance.loaners.add(loaner)
-        print("______________VAIDATED DATA______________________")
-        print(validated_data, "____________________________________")
-        property = Property.objects.filter(id=instance.id).update(
-                name = validated_data.pop('name'),
-                description = validated_data.pop('description'),
-                price = validated_data.pop('price'),
-                discount = validated_data.pop('discount'),
-                type = validated_data.pop('type'),
-                move_in_date = validated_data.pop('move_in_date'),
-                rental = validated_data.pop('rental')
-        )
-        property_get = Property.objects.get(pk=instance.id)
-        return property_get
+                instance.pictures.add(new_image)
+
+    if 'location' in validated_data:
+        location_data = validated_data.pop('location')
+        Location.objects.filter(id=instance.location.id).update(**location_data)
+    
+    if 'amenties' in validated_data:
+        amenties_data = validated_data.pop('amenties')
+        Amenties.objects.filter(property=instance).update(**amenties_data)
+    
+    if 'loaners' in validated_data:
+        loaners_data = validated_data.pop('loaners')
+        instance.loaners.clear()
+        for loaner_data in loaners_data:
+            loaner, _ = Loaners.objects.get_or_create(
+                name=loaner_data['name'],
+                defaults={
+                    'logo': loaner_data.get('logo', ''),
+                    'real_state_provided': loaner_data.get('real_state_provided', False)
+                }
+            )
+            instance.loaners.add(loaner)
+
+    # Update property fields
+    for field in validated_data:
+        setattr(instance, field, validated_data[field])
+    instance.save()
+
+    return instance
     
 
 
