@@ -303,3 +303,16 @@ class WishlistViewSet(viewsets.ModelViewSet):
                 {"error": f"An error occurred: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class RequestTourViewset(viewsets.ModelViewSet):
+    queryset = RequestedTour.objects.all() 
+    serializer_class = RequestTourSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        print(self.request.user.role)
+        if(self.request.user.role != 'admin'):
+            return self.queryset.filter(user=self.request.user)
+        else:
+            return self.queryset.filter()

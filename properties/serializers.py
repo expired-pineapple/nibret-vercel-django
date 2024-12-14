@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from authentication.serializers import UserAccountSerialzer
-from .models import AuctionImage, Criteria, HomeLoan, LoanerProperty, Location, Property, Image, Amenties, Auction, Wishlist, Reviews, Loaners
+from properties.models import *
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -226,3 +226,9 @@ class HomeLoanSerializer(serializers.ModelSerializer):
             criteria.append(cr)
         return home_loan
     
+
+class RequestTourSerializer(serializers.ModelSerializer):
+    user = UserAccountSerialzer(read_only=True)
+    class Meta:
+        model = RequestedTour
+        fields = '__all__'
