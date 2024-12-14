@@ -9,5 +9,5 @@ class PropertyPermission(permissions.BasePermission):
        
         return request.user.is_authenticated and (
             request.user.is_staff or 
-            hasattr(request.user.role, 'agent') 
+            request.user.role in ['agent', 'admin']
         )

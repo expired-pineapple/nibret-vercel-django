@@ -142,7 +142,7 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'jwt-auth',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
     'JWT_AUTH_RETURN_EXPIRATION': True,
-    'SESSION_LOGIN': False,
+    'SESSION_LOGIN': True,
 }
 
 REST_FRAMEWORK = {

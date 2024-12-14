@@ -16,42 +16,18 @@ class LocationViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    # permission_classes = [PropertyPermission]
+    permission_classes = [PropertyPermission]
 
 
     def get_queryset(self):
         queryset = Property.objects.all()
-        
-        # Filter by type
+
         property_type = self.request.query_params.get('type', None)
         if property_type:
             queryset = queryset.filter(type=property_type)
 
-        # Filter by price range
-        min_price = self.request.query_params.get('min_price', None)
-        max_price = self.request.query_params.get('max_price', None)
-        name = self.request.query_params.get('name', None)
-        general_search = self.request.query_params.get('search', None)
-        if name:
-            queryset = queryset.filter(name=name)
-
-        if general_search:
-            queryset = queryset.filter(Q(name__icontains=general_search) | Q( description__icontains=general_search) | Q(location__name__icontains=general_search))
-        if min_price:
-            queryset = queryset.filter(price__gte=min_price)
-        if max_price:
-            queryset = queryset.filter(price__lte=max_price)
-        bedroom = self.request.query_params.get('bedroom', None)
-        if bedroom and bedroom !="Any":
-            queryset = queryset = queryset.filter(amenties__bedroom__gte = int(bedroom))
-
-        bathroom = self.request.query_params.get('bathroom', None)
-        if bathroom and bathroom !="Any":
-            queryset = queryset = queryset.filter(amenties__bathroom__gte = int(bathroom))
-        
-        area = self.request.query_params.get('area', None)
-        if area and area !="Any":
-            queryset = queryset = queryset.filter(amenties__area__gte = int(area))
+        if self.request.user.role != 'admin':
+            queryset = queryset.filter(sold_out=False)
         return queryset
 
     
@@ -131,8 +107,20 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property = Property.objects.filter(pk=self.request.data.get("id")).update(**discount)
 
         return Response({"detail": "Updated successfully"}, status=status.HTTP_200_OK)
-        # return Response(serializer.data)
+    
 
+    @action(detail=False, methods=['POST'])
+    def sold_out(self, request, pk=None):
+        property_id = self.request.data.get("id")
+        property = Property.objects.filter(pk=property_id).first()
+
+        if property is None:
+            return Response({"detail": "Property not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        property.sold_out = not property.sold_out
+        property.save()
+
+        return Response({"detail": "Updated successfully"}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -205,7 +193,7 @@ class LoanersViewSet(viewsets.ModelViewSet):
 class AuctionViewSet(viewsets.ModelViewSet):
     queryset = Auction.objects.all()
     serializer_class = AuctionSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get_queryset(self):
         queryset = Auction.objects.all()
         
@@ -316,3 +304,33 @@ class RequestTourViewset(viewsets.ModelViewSet):
             return self.queryset.filter(user=self.request.user)
         else:
             return self.queryset.filter()
+   
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def add_items(self, request):
+        try:
+            item_id = request.data.get('item_id')
+            try:
+                property_instance = Property.objects.get(id=item_id)
+                requested_tour = RequestedTour.objects.create(
+                    date = models.DateTimeField(),
+                    user = request.user,
+                    properties = property_instance
+                )
+                 
+            except Property.DoesNotExist:
+                    return Response(
+                        {"error": f"Property with id {item_id} does not exist."}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+         
+            return Response(
+                RequestTourSerializer(requested_tour).data, 
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
