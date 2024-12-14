@@ -57,41 +57,26 @@ class AuctionSerializer(serializers.ModelSerializer):
         return obj.start_date.strftime("%Y-%m-%d")
 
     def create(self, validated_data):
-        # Extract nested data
         location_data = validated_data.pop('location')
         pictures_data = validated_data.pop('pictures', [])
-
-        # Create location first
         location = Location.objects.create(**location_data)
-
-        # Create auction with the location
         auction = Auction.objects.create(location=location, **validated_data)
-
-        # Create pictures
         for picture_data in pictures_data:
             AuctionImage.objects.create(auction=auction, **picture_data)
-
         return auction
 
     def update(self, instance, validated_data):
-        # Handle location update
         if 'location' in validated_data:
             location_data = validated_data.pop('location')
             location = instance.location
             for attr, value in location_data.items():
                 setattr(location, attr, value)
             location.save()
-
-        # Handle pictures update
         if 'pictures' in validated_data:
             pictures_data = validated_data.pop('pictures')
-            # Optional: Delete existing pictures
             instance.pictures.all().delete()
-            # Create new pictures
             for picture_data in pictures_data:
                 AuctionImage.objects.create(auction=instance, **picture_data)
-
-        # Update remaining auction fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -167,39 +152,18 @@ class PropertySerializer(serializers.ModelSerializer):
         return property
 
 def update(self, instance, validated_data):
-    if 'pictures' in validated_data:
-        pictures_data = validated_data.pop('pictures')
-
-        for picture_data in pictures_data:
-            existing_images = Image.objects.filter(image_url=picture_data['image_url'])
-            
-            if existing_images.exists():
-                existing_image = existing_images.first()
-                existing_image.blur_hash = picture_data.get('blur_hash', existing_image.blur_hash)
-                existing_image.is_cover = picture_data.get('is_cover', existing_image.is_cover)
-                existing_image.save()
-                
-                
-                if existing_image not in instance.pictures.all():
-                    instance.pictures.add(existing_image)
-            else:
-               
-                new_image = Image.objects.create(
-                    property=instance,
-                    image_url=picture_data['image_url'],
-                    blur_hash=picture_data.get('blur_hash', ''),
-                    is_cover=picture_data.get('is_cover', False)
-                )
-                instance.pictures.add(new_image)
-
     if 'location' in validated_data:
         location_data = validated_data.pop('location')
-        Location.objects.filter(id=instance.location.id).update(**location_data)
-    
-    if 'amenties' in validated_data:
-        amenties_data = validated_data.pop('amenties')
-        Amenties.objects.filter(property=instance).update(**amenties_data)
-    
+        location = instance.location
+        for attr, value in location_data.items():
+            setattr(location, attr, value)
+            location.save()
+    if 'pictures' in validated_data:
+        pictures_data = validated_data.pop('pictures')
+        instance.pictures.all().delete()
+        for picture_data in pictures_data:
+            Image.objects.create(property=instance, **picture_data)
+
     if 'loaners' in validated_data:
         loaners_data = validated_data.pop('loaners')
         instance.loaners.clear()
@@ -213,12 +177,12 @@ def update(self, instance, validated_data):
             )
             instance.loaners.add(loaner)
 
-    # Update property fields
-    for field in validated_data:
-        setattr(instance, field, validated_data[field])
-    instance.save()
+    for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+        instance.save()
 
     return instance
+
     
 
 
