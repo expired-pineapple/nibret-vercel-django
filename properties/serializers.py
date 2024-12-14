@@ -163,7 +163,12 @@ class PropertySerializer(serializers.ModelSerializer):
             instance.pictures.all().delete()
             for picture_data in pictures_data:
                 Image.objects.create(property=instance, **picture_data)
-    
+        if 'amenities' in validated_data:
+            amenities_data = validated_data.pop('amenities')
+            amenities = instance.location
+            for attr, value in amenities_data.items():
+                setattr(location, attr, value)
+                amenities.save()
         if 'loaners' in validated_data:
             loaners_data = validated_data.pop('loaners')
             instance.loaners.clear()
