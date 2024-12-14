@@ -176,12 +176,19 @@ def update(self, instance, validated_data):
                 }
             )
             instance.loaners.add(loaner)
-
-    for attr, value in validated_data.items():
-        setattr(instance, attr, value)
-        instance.save()
-
-    return instance
+        print("______________VAIDATED DATA______________________")
+        print(validated_data, "____________________________________")
+        Property.objects.filter(id=instance.id).update(
+                name = validated_data.pop('name'),
+                description = validated_data.pop('description'),
+                price = validated_data.pop('price'),
+                discount = validated_data.pop('discount'),
+                type = validated_data.pop('type'),
+                move_in_date = validated_data.pop('move_in_date'),
+                rental = validated_data.pop('rental')
+        )
+        property_get = Property.objects.get(pk=instance.id)
+        return property_get
 
     
 
