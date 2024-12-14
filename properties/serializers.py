@@ -229,6 +229,7 @@ class HomeLoanSerializer(serializers.ModelSerializer):
 
 class RequestTourSerializer(serializers.ModelSerializer):
     user = UserAccountSerialzer(read_only=True)
+    properties = PropertySerializer()
     class Meta:
         model = RequestedTour
         fields = '__all__'
