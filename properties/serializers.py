@@ -151,44 +151,44 @@ class PropertySerializer(serializers.ModelSerializer):
         
         return property
 
-def update(self, instance, validated_data):
-    if 'location' in validated_data:
-        location_data = validated_data.pop('location')
-        location = instance.location
-        for attr, value in location_data.items():
-            setattr(location, attr, value)
-            location.save()
-    if 'pictures' in validated_data:
-        pictures_data = validated_data.pop('pictures')
-        instance.pictures.all().delete()
-        for picture_data in pictures_data:
-            Image.objects.create(property=instance, **picture_data)
-
-    if 'loaners' in validated_data:
-        loaners_data = validated_data.pop('loaners')
-        instance.loaners.clear()
-        for loaner_data in loaners_data:
-            loaner, _ = Loaners.objects.get_or_create(
-                name=loaner_data['name'],
-                defaults={
-                    'logo': loaner_data.get('logo', ''),
-                    'real_state_provided': loaner_data.get('real_state_provided', False)
-                }
+    def update(self, instance, validated_data):
+        if 'location' in validated_data:
+            location_data = validated_data.pop('location')
+            location = instance.location
+            for attr, value in location_data.items():
+                setattr(location, attr, value)
+                location.save()
+        if 'pictures' in validated_data:
+            pictures_data = validated_data.pop('pictures')
+            instance.pictures.all().delete()
+            for picture_data in pictures_data:
+                Image.objects.create(property=instance, **picture_data)
+    
+        if 'loaners' in validated_data:
+            loaners_data = validated_data.pop('loaners')
+            instance.loaners.clear()
+            for loaner_data in loaners_data:
+                loaner, _ = Loaners.objects.get_or_create(
+                    name=loaner_data['name'],
+                    defaults={
+                        'logo': loaner_data.get('logo', ''),
+                        'real_state_provided': loaner_data.get('real_state_provided', False)
+                    }
+                )
+                instance.loaners.add(loaner)
+            print("______________VAIDATED DATA______________________")
+            print(validated_data, "____________________________________")
+            Property.objects.filter(id=instance.id).update(
+                    name = validated_data.pop('name'),
+                    description = validated_data.pop('description'),
+                    price = validated_data.pop('price'),
+                    discount = validated_data.pop('discount'),
+                    type = validated_data.pop('type'),
+                    move_in_date = validated_data.pop('move_in_date'),
+                    rental = validated_data.pop('rental')
             )
-            instance.loaners.add(loaner)
-        print("______________VAIDATED DATA______________________")
-        print(validated_data, "____________________________________")
-        Property.objects.filter(id=instance.id).update(
-                name = validated_data.pop('name'),
-                description = validated_data.pop('description'),
-                price = validated_data.pop('price'),
-                discount = validated_data.pop('discount'),
-                type = validated_data.pop('type'),
-                move_in_date = validated_data.pop('move_in_date'),
-                rental = validated_data.pop('rental')
-        )
-        property_get = Property.objects.get(pk=instance.id)
-        return property_get
+            property_get = Property.objects.get(pk=instance.id)
+            return property_get
 
     
 
