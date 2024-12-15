@@ -307,7 +307,7 @@ class RequestTourViewset(viewsets.ModelViewSet):
             try:
                 property_instance = Property.objects.get(id=item_id)
                 requested_tour = RequestedTour.objects.create(
-                    date = models.DateTimeField(),
+                    date = request.data.get('date'),
                     user = request.user,
                     properties = property_instance
                 )
