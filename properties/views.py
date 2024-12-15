@@ -16,7 +16,7 @@ class LocationViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    permission_classes = [PropertyPermission]
+    # permission_classes = [PropertyPermission]
 
 
     def get_queryset(self):
@@ -25,9 +25,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_type = self.request.query_params.get('type', None)
         if property_type:
             queryset = queryset.filter(type=property_type)
-
-        if self.request.user.role != 'admin':
-            queryset = queryset.filter(sold_out=False)
         return queryset
 
     
@@ -79,7 +76,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if area and area != "Any":
             queryset = queryset.filter(amenties__area__gte=int(area))
             
-        # Filter by location
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
         radius = request.data.get('radius', 10) 
@@ -183,7 +179,6 @@ class ImageViewSet(viewsets.ModelViewSet):
 class AmentiesViewSet(viewsets.ModelViewSet):
     queryset = Amenties.objects.all()
     serializer_class = AmentiesSerializer
-    permission_classes = [PropertyPermission]
 
 class LoanersViewSet(viewsets.ModelViewSet):
     queryset = Loaners.objects.all()
@@ -193,7 +188,7 @@ class LoanersViewSet(viewsets.ModelViewSet):
 class AuctionViewSet(viewsets.ModelViewSet):
     queryset = Auction.objects.all()
     serializer_class = AuctionSerializer
-    permission_classes = [IsAuthenticated]
+    
     def get_queryset(self):
         queryset = Auction.objects.all()
         
