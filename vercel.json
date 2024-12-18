@@ -1,14 +1,12 @@
-{{
+{
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/wsgi.py"
+      "dest": "api/wsgi.py" 
     }
-  ]
-},
-{
+  ],
   "functions": {
-    "api/*.py": {
+    "api/*.py": { 
       "memory": 1024,
       "maxDuration": 10
     }
@@ -18,5 +16,4 @@
       "PYTHONUNBUFFERED": "1"
     }
   }
-}
 }
