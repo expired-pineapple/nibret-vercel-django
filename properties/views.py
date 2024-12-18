@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from properties.serializers import *
 from properties.permissions import *
 
@@ -18,15 +18,52 @@ class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
     # permission_classes = [PropertyPermission]
 
+class PropertyViewSet(viewsets.ModelViewSet):
+    serializer_class = PropertySerializer
+    # permission_classes = [PropertyPermission]
 
     def get_queryset(self):
-        queryset = Property.objects.all()
+        queryset = Property.objects.select_related(
+            'location',
+            'created_by'  # Add this since you have UserAccount FK
+        ).prefetch_related(
+            Prefetch(
+                'pictures',
+                queryset=Image.objects.order_by('-is_cover')  # Optimize image ordering
+            ),
+            'amenties',
+            'loaners',
+            Prefetch(
+                'wishlist_set',
+                queryset=Wishlist.objects.filter(user=self.request.user.id) if self.request.user.is_authenticated else Wishlist.objects.none(),
+                to_attr='user_wishlist'
+            )
+        )
 
-        property_type = self.request.query_params.get('type', None) 
+        filters = {}
+        
+        property_type = self.request.query_params.get('type')
         if property_type:
-            queryset = queryset.filter(type=property_type)
-        return queryset
+            filters['type'] = property_type
 
+        sold = self.request.query_params.get('sold_out')
+        if sold is not None:
+            filters['sold_out'] = sold.lower() == 'true'
+
+        rental = self.request.query_params.get('rental')
+        if rental is not None:
+            filters['rental'] = rental.lower() == 'true'
+
+
+        if filters:
+            queryset = queryset.filter(**filters)
+
+        return queryset.order_by('-created_at')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user_id'] = self.request.user.id if self.request.user.is_authenticated else None
+        return context
     
     @action(detail=False, methods=['post'])
     def search(self, request):
@@ -137,6 +174,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 {"detail": f"Something went wrong while creating property"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
 
 class HomeLoanViewSet(viewsets.ModelViewSet):
     queryset=HomeLoan.objects.all()
