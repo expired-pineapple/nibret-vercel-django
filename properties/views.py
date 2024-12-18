@@ -14,24 +14,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
 class PropertyViewSet(viewsets.ModelViewSet):
-    queryset = Property.objects.select_related(
-            'location',
-            'created_by'
-        ).prefetch_related(
-            Prefetch(
-                'pictures',
-                queryset=Image.objects.order_by('-is_cover')  
-            ),
-            'amenties',
-            'loaners',
-            Prefetch(
-                'wishlist_set',
-                queryset=Wishlist.objects.filter(user=self.request.user.id) if self.request.user.is_authenticated else Wishlist.objects.none(),
-                to_attr='user_wishlist'
-            )
-        )
     serializer_class = PropertySerializer
-    
     # permission_classes = [PropertyPermission]
 
     def get_queryset(self):
@@ -72,7 +55,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         return queryset.order_by('-created_at')
 
-    
+    def get_object(self):
+        return get_object_or_404(self.get_queryset(), id=self.case)
     @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
