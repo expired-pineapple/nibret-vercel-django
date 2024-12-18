@@ -25,15 +25,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
         ).prefetch_related(
             Prefetch(
                 'pictures',
-                queryset=Image.objects.order_by('-is_cover')  
             ),
             'amenties',
-            'loaners',
-            Prefetch(
-                'wishlist_set',
-                queryset=Wishlist.objects.filter(user=self.request.user.id) if self.request.user.is_authenticated else Wishlist.objects.none(),
-                to_attr='user_wishlist'
-            )
+            'loaners'
         )
 
         filters = {}
