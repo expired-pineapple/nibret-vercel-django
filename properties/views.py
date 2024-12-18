@@ -16,16 +16,13 @@ class LocationViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    # permission_classes = [PropertyPermission]
-
-class PropertyViewSet(viewsets.ModelViewSet):
-    serializer_class = PropertySerializer
+    
     # permission_classes = [PropertyPermission]
 
     def get_queryset(self):
         queryset = Property.objects.select_related(
             'location',
-            'created_by'  # Add this since you have UserAccount FK
+            'created_by'
         ).prefetch_related(
             Prefetch(
                 'pictures',
