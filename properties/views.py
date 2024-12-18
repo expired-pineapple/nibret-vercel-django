@@ -29,7 +29,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         ).prefetch_related(
             Prefetch(
                 'pictures',
-                queryset=Image.objects.order_by('-is_cover')  # Optimize image ordering
+                queryset=Image.objects.order_by('-is_cover')  
             ),
             'amenties',
             'loaners',
@@ -60,10 +60,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         return queryset.order_by('-created_at')
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['user_id'] = self.request.user.id if self.request.user.is_authenticated else None
-        return context
     
     @action(detail=False, methods=['post'])
     def search(self, request):
