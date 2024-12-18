@@ -15,10 +15,11 @@ class LocationViewSet(viewsets.ModelViewSet):
 
 class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
+    queryset = Property.objects.all() 
     # permission_classes = [PropertyPermission]
 
     def get_queryset(self):
-        queryset = Property.objects.select_related(
+        queryset = super().get_queryset().select_related(
             'location',
             'created_by'
         ).prefetch_related(
