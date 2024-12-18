@@ -15,18 +15,6 @@ class LocationViewSet(viewsets.ModelViewSet):
 
 class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
-    queryset = Property.objects.select_related(
-            'location',
-            'created_by'
-        ).prefetch_related(
-            Prefetch(
-                'pictures',
-                queryset=Image.objects.order_by('-is_cover')  
-            ),
-            'amenties',
-            'loaners',
-          
-        )
     # permission_classes = [PropertyPermission]
 
     def get_queryset(self):
