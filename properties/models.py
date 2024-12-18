@@ -60,6 +60,7 @@ class Property(models.Model):
     description = models.TextField()
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='property')
     price = models.FloatField()
+    currency = models.CharField(max_length=255, default="ETB")
     discount = models.FloatField(null=True, blank=True, default=0)
     sold_out = models.BooleanField(default=False)
     is_store = models.BooleanField(default=False)

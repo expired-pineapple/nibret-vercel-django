@@ -22,7 +22,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Property.objects.all()
 
-        property_type = self.request.query_params.get('type', None)
+        property_type = self.request.query_params.get('type', None) 
+        status = self.request.query_params.get('status', None)
+        if status:
+            if status.lower() == "rental":
+                queryset = queryset.filter(rental=True)
+            elif status.lower() == "sold":
+                queryset = queryset.filter(sold_out=True)
+            elif status.lower() == "sale":
+                queryset = queryset.filter(rental=False)
         if property_type:
             queryset = queryset.filter(type=property_type)
         return queryset
@@ -31,7 +39,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
-    
+
         property_type = request.data.get('type')
         if property_type:
             if isinstance(property_type, list):
