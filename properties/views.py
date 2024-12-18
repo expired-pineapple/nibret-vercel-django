@@ -14,7 +14,22 @@ class LocationViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
 class PropertyViewSet(viewsets.ModelViewSet):
-    queryset = Property.objects.all()
+    queryset = Property.objects.select_related(
+            'location',
+            'created_by'
+        ).prefetch_related(
+            Prefetch(
+                'pictures',
+                queryset=Image.objects.order_by('-is_cover')  
+            ),
+            'amenties',
+            'loaners',
+            Prefetch(
+                'wishlist_set',
+                queryset=Wishlist.objects.filter(user=self.request.user.id) if self.request.user.is_authenticated else Wishlist.objects.none(),
+                to_attr='user_wishlist'
+            )
+        )
     serializer_class = PropertySerializer
     
     # permission_classes = [PropertyPermission]
