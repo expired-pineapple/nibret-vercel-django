@@ -23,14 +23,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = Property.objects.all()
 
         property_type = self.request.query_params.get('type', None) 
-        status = self.request.query_params.get('status', None)
-        if status:
-            if status.lower() == "rental":
-                queryset = queryset.filter(rental=True)
-            elif status.lower() == "sold":
-                queryset = queryset.filter(sold_out=True)
-            elif status.lower() == "sale":
-                queryset = queryset.filter(rental=False)
         if property_type:
             queryset = queryset.filter(type=property_type)
         return queryset
