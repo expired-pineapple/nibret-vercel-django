@@ -48,7 +48,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if filters:
             queryset = queryset.filter(**filters)
 
-        return queryset.order_by('-created_at')
+        return queryset
 
     def get_object(self):
         return get_object_or_404(self.get_queryset(), id=self.case)
