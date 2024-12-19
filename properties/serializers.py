@@ -99,24 +99,11 @@ class PropertySerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     pictures = ImageSerializer(many=True)
     amenties = AmentiesSerializer()
-    is_wishlisted = serializers.SerializerMethodField()
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     
     class Meta:
         model = Property
         fields = '__all__'
-
-    def get_is_wishlisted(self, obj):
-        if hasattr(obj, 'is_wishlisted'):
-            return obj.is_wishlisted
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return Wishlist.objects.filter(
-                user=request.user,
-                property=obj
-
-            ).exists()
-        return False
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
