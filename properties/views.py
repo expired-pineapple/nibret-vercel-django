@@ -20,8 +20,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related(
-            'location',
-            'created_by'
+            'location'
         ).prefetch_related(
             Prefetch(
                 'pictures',
