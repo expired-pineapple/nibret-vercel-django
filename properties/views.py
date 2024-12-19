@@ -49,9 +49,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(**filters)
 
         return queryset
-
-    def get_object(self):
-        return get_object_or_404(self.get_queryset(), id=self.case)
     @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
