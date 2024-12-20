@@ -40,21 +40,17 @@ class PropertyViewSet(viewsets.ModelViewSet):
             'amenties',
         )
 
-        
-
         filters = {}
         
         property_type = self.request.query_params.get('type')
         if property_type:
             filters['type'] = property_type
 
-        sold = self.request.query_params.get('sold_out')
-        if sold is not None:
-            filters['sold_out'] = sold.lower() == 'true'
-
-        rental = self.request.query_params.get('rental')
-        if rental is not None:
-            filters['rental'] = rental.lower() == 'true'
+        status = self.request.query_params.get("status")
+        if status is not None:
+            filters['sold_out'] = status.lower() == 'sold'
+            if not filters['sold_out']:
+                filters['rental'] = status.lower() == "rental" 
 
 
         if filters:
