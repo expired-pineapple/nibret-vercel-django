@@ -14,21 +14,21 @@ class LocationViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
 class PropertyViewSet(viewsets.ModelViewSet):
-    serializer_class = PropertyListSerializer
+    serializer_class = PropertySerializer
     queryset = Property.objects.all() 
     # permission_classes = [PropertyPermission]
 
-    action_serializers = {
-        'retrieve': PropertySerializer,
-        'list': PropertyListSerializer,
-        'create': PropertySerializer
-    }
-    def get_serializer_class(self):
+    # action_serializers = {
+    #     'retrieve': PropertySerializer,
+    #     'list': PropertyListSerializer,
+    #     'create': PropertySerializer
+    # }
+    # def get_serializer_class(self):
 
-        if hasattr(self, 'action_serializers'):
-            return self.action_serializers.get(self.action, self.serializer_class)
+    #     if hasattr(self, 'action_serializers'):
+    #         return self.action_serializers.get(self.action, self.serializer_class)
 
-        return super(PropertyViewSet, self).get_serializer_class()
+    #     return super(PropertyViewSet, self).get_serializer_class()
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related(
