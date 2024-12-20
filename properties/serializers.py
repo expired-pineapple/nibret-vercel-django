@@ -95,14 +95,6 @@ class LoanerPropertySerializer(serializers.ModelSerializer):
         model = LoanerProperty
         fields = ['id', 'loaner', 'description']
 
-class PropertyListSerializer(serializers.ModelSerializer):
-    location = LocationSerializer()
-    pictures = ImageSerializer(many=True)
-    amenties = AmentiesSerializer()
-   
-    class Meta:
-        model = Property
-        fields = '__all__'
 
 class PropertySerializer(serializers.ModelSerializer):
     location = LocationSerializer()
