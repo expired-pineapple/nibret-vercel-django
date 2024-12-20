@@ -14,9 +14,21 @@ class LocationViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
 class PropertyViewSet(viewsets.ModelViewSet):
-    serializer_class = PropertySerializer
+    serializer_class = PropertyListSerializer
     queryset = Property.objects.all() 
     # permission_classes = [PropertyPermission]
+
+    action_serializers = {
+        'retrieve': PropertySerializer,
+        'list': PropertyListSerializer,
+        'create': PropertySerializer
+    }
+    def get_serializer_class(self):
+
+        if hasattr(self, 'action_serializers'):
+            return self.action_serializers.get(self.action, self.serializer_class)
+
+        return super(PropertyViewSet, self).get_serializer_class()
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related(
@@ -26,8 +38,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 'pictures',
             ),
             'amenties',
-            'loaners'
         )
+
+        
 
         filters = {}
         
@@ -102,7 +115,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         
         if latitude and longitude:
             try:
-                radius_degrees = float(radius) / 111000  # 1 degree ≈ 111km
+                radius_degrees = float(radius) / 111  # 1 degree ≈ 111km
                 lat = float(latitude)
                 lng = float(longitude)
                         
