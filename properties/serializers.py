@@ -25,13 +25,6 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = '__all__'
 
-class AmentiesSerializer(serializers.ModelSerializer):
-    property = serializers.UUIDField(read_only=True)
-
-    class Meta:
-        model = Amenties
-        fields = '__all__'
-
 class AuctionSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     location = LocationSerializer()
@@ -99,7 +92,6 @@ class LoanerPropertySerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     pictures = ImageSerializer(many=True)
-    amenties = AmentiesSerializer()
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     
     class Meta:
@@ -108,7 +100,6 @@ class PropertySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
-        amenties_data = validated_data.pop('amenties')
         image_data = validated_data.pop('pictures')
         loaners_data = validated_data.pop('loaners', [])
         
@@ -117,11 +108,6 @@ class PropertySerializer(serializers.ModelSerializer):
 
         property = Property.objects.create(location=location, **validated_data)
         
-
-        amenties_data['property'] = property
-        Amenties.objects.create(**amenties_data)
-
-
         for image in image_data:
             image['property'] = property
             Image.objects.create(**image)
@@ -151,12 +137,6 @@ class PropertySerializer(serializers.ModelSerializer):
             instance.pictures.all().delete()
             for picture_data in pictures_data:
                 Image.objects.create(property=instance, **picture_data)
-        if 'amenties' in validated_data:
-            amenities_data = validated_data.pop('amenties')
-            amenities = instance.location
-            for attr, value in amenities_data.items():
-                setattr(location, attr, value)
-                amenities.save()
         if 'loaners' in validated_data:
             loaners_data = validated_data.pop('loaners')
             instance.loaners.clear()

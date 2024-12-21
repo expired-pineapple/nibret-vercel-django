@@ -15,18 +15,25 @@ class LocationViewSet(viewsets.ModelViewSet):
 
 class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
-    queryset = Property.objects.all() 
-    permission_classes = [PropertyPermission]
+    queryset = Property.objects.select_related(
+            'location',
+           
+            
+        ).prefetch_related(
+            
+              'pictures',
+        )
+    # permission_classes = [PropertyPermission]
+
+    def get_serializer_class(self):
+
+        if hasattr(self, 'action_serializers'):
+            return self.action_serializers.get(self.action, self.serializer_class)
+
+        return super(PropertyViewSet, self).get_serializer_class()
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related(
-            'location'
-        ).prefetch_related(
-            Prefetch(
-                'pictures',
-            ),
-            'amenties',
-        )
+        queryset = super().get_queryset()
 
         filters = {}
         
@@ -45,6 +52,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(**filters)
 
         return queryset
+    
+    
     @action(detail=False, methods=['post'])
     def search(self, request):
         queryset = Property.objects.all()
@@ -83,15 +92,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         bedroom = request.data.get('bedroom')
         if bedroom and bedroom != "Any":
-            queryset = queryset.filter(amenties__bedroom__gte=int(bedroom))
+            queryset = queryset.filter(bedroom__gte=int(bedroom))
 
         bathroom = request.data.get('bathroom')
         if bathroom and bathroom != "Any":
-            queryset = queryset.filter(amenties__bathroom__gte=int(bathroom))
+            queryset = queryset.filter(bathroom__gte=int(bathroom))
 
         area = request.data.get('area')
         if area and area != "Any":
-            queryset = queryset.filter(amenties__area__gte=int(area))
+            queryset = queryset.filter(area__gte=int(area))
             
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
@@ -195,9 +204,6 @@ class ImageViewSet(viewsets.ModelViewSet):
 
         return Response(created_images, status=status.HTTP_201_CREATED)
 
-class AmentiesViewSet(viewsets.ModelViewSet):
-    queryset = Amenties.objects.all()
-    serializer_class = AmentiesSerializer
 
 class LoanersViewSet(viewsets.ModelViewSet):
     queryset = Loaners.objects.all()

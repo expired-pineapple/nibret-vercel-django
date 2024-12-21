@@ -58,8 +58,11 @@ class Property(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='property')
+    location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='property')
     price = models.FloatField()
+    bedroom = models.IntegerField(null=True, blank=True, default=0)
+    bathroom = models.IntegerField(null=True, blank=True, default=0)
+    area = models.FloatField(null=True, blank=True, default=0)
     currency = models.CharField(max_length=255, default="ETB")
     discount = models.FloatField(null=True, blank=True, default=0)
     sold_out = models.BooleanField(default=False)
@@ -95,18 +98,6 @@ class Image(models.Model):
     def __str__(self):
         return f"Image for {self.property.name}"
     
-
-class Amenties(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    bedroom = models.IntegerField()
-    bathroom = models.IntegerField()
-    area = models.FloatField()
-    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='amenties')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Amenities for {self.property.name}"
 
 class Auction(models.Model):
     STATUS_CHOICES = [
