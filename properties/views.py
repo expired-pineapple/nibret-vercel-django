@@ -23,7 +23,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             
               'pictures',
         )
-    permission_classes = [PropertyPermission]
+    # permission_classes = [PropertyPermission]
 
     def get_serializer_class(self):
 
@@ -52,11 +52,29 @@ class PropertyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(**filters)
 
         return queryset
-    
+    @action(detail=False, methods=['post'])
+    def map(self, request):
+        queryset = super().get_queryset()
+        latitude = request.data.get('latitude')
+        longitude = request.data.get('longitude')
+        radius = request.data.get('radius') 
+        radius_degrees = float(radius) / 111
+        lat = float(latitude)
+        lng = float(longitude)           
+        queryset = queryset.filter(
+                    location__latitude__gte=lat - radius_degrees,
+                    location__latitude__lte=lat + radius_degrees,
+                    location__longitude__gte=lng - radius_degrees,
+                    location__longitude__lte=lng + radius_degrees
+                )
+        
+        print(queryset)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
     def search(self, request):
-        queryset = Property.objects.all()
+        queryset = super().get_queryset()
 
         property_type = request.data.get('type')
         if property_type:
@@ -107,7 +125,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         radius = request.data.get('radius', 10) 
         
         if latitude and longitude:
-            try:
                 radius_degrees = float(radius) / 111  # 1 degree ≈ 111km
                 lat = float(latitude)
                 lng = float(longitude)
@@ -118,8 +135,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
                     location__longitude__gte=lng - radius_degrees,
                     location__longitude__lte=lng + radius_degrees
                 )
-            except (ValueError, TypeError):
-                pass
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
