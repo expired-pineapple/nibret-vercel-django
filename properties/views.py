@@ -23,7 +23,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             
               'pictures',
         )
-    # permission_classes = [PropertyPermission]
+    permission_classes = [PropertyPermission]
 
     def get_serializer_class(self):
 
