@@ -38,7 +38,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         filters = {}
         
         property_type = self.request.query_params.get('type')
-        if property_type:
+        if property_type and property_type != "All":
             filters['type'] = property_type
 
         status = self.request.query_params.get("status")
