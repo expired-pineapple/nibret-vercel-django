@@ -55,17 +55,14 @@ class PropertyViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def map(self, request):
         queryset = super().get_queryset()
-        latitude = request.data.get('latitude')
-        longitude = request.data.get('longitude')
-        radius = request.data.get('radius') 
-        radius_degrees = float(radius) / 111
-        lat = float(latitude)
-        lng = float(longitude)           
+        upperLatitude = request.data.get('upperLatitude')
+        lowerLatitude = request.data.get('lowerLatitude')
+        
+        upperLongitude = request.data.get('upperLongitude')
+        lowerLongitude =  request.data.get('lowerLongitude')
         queryset = queryset.filter(
-                    location__latitude__gte=lat - radius_degrees,
-                    location__latitude__lte=lat + radius_degrees,
-                    location__longitude__gte=lng - radius_degrees,
-                    location__longitude__lte=lng + radius_degrees
+                    Q(location__latitude__gte=lowerLatitude, location__longitude__gte=lowerLongitude) |
+                    Q(location__latitude__lte=upperLatitude,location__longitude__lte=upperLongitude)
                 )
         
         print(queryset)
