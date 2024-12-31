@@ -70,6 +70,7 @@ class Property(models.Model):
     type = models.CharField(max_length=255, null=True, blank=True)
     move_in_date = models.DateTimeField(null=True, blank=True)
     rental = models.BooleanField(default=False)
+    furnished = models.BooleanField(default=False)
     created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
