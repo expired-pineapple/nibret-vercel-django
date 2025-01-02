@@ -80,6 +80,11 @@ class PropertyViewSet(viewsets.ModelViewSet):
             else:
                 queryset = queryset.filter(type=property_type)
 
+        furnished = request.data.get('furnished')
+        if furnished is not None:
+            queryset = queryset.filter(furnished=request.data.get('furnished'))
+          
+
         try:
             min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
             max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
