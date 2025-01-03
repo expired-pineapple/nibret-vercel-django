@@ -46,7 +46,12 @@ class PropertyViewSet(viewsets.ModelViewSet):
             filters['sold_out'] = status.lower() == 'sold'
             if not filters['sold_out']:
                 filters['rental'] = status.lower() == "rental" 
-
+        general_search = self.request.query_params.get("search")
+        if general_search:
+            queryset = queryset.filter(
+                    Q(location__name__icontains=general_search) | Q(name__icontains=general_search) |
+                    Q(description__icontains=general_search)| Q(type__icontains=general_search)
+                )
 
         if filters:
             queryset = queryset.filter(**filters)
