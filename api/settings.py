@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-=cldztbc4jg&xl0!x673!*v2_=p$$eu)=7*f#d0#zs$44xx-h^
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app','localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -76,14 +76,13 @@ WSGI_APPLICATION = 'api.wsgi.app'
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql',
-    'NAME': os.getenv('PGDATABASE'),
-    'USER': os.getenv('PGUSER'),
-    'PASSWORD': os.getenv('PGPASSWORD'),
-    'HOST': os.getenv('PGHOST'),
+    'NAME': 'postgres',
+    'USER': 'postgres.omyxyueflsxaqyjscunx',
+    'PASSWORD': 'DbIBvVjhBdbWSL4B',
+    'HOST': 'aws-0-eu-west-3.pooler.supabase.com',
     'PORT':6543
   }
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -116,7 +115,7 @@ USE_TZ = True
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-ACCOUNT_AUTHENTICATION_METHOD = "email" 
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "none" 
@@ -127,6 +126,7 @@ REST_AUTH = {
     'REGISTER_SERIALIZER': 'authentication.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'authentication.serializers.UserAccountSerialzer',
     'USE_JWT': True,
+    'LOGOUT_ON_PASSWORD_CHANGE': True,
     'JWT_AUTH_COOKIE': 'jwt-auth',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
     'JWT_AUTH_RETURN_EXPIRATION': True,

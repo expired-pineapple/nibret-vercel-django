@@ -9,7 +9,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from authentication.models import UserAccount
 
 class CustomRegisterSerializer(RegisterSerializer):
-    phone = serializers.CharField(max_length=10, required=True)  # Make it required
+    phone = serializers.CharField(max_length=10, required=True)
     first_name = serializers.CharField(required=True, max_length=5)
     last_name = serializers.CharField(required=True, max_length=100)
 

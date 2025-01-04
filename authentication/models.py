@@ -54,14 +54,14 @@ class UserManager(BaseUserManager):
 
 class UserAccount(AbstractUser):
     username = models.CharField(max_length=150, unique=True)
-    phone=models.CharField(max_length=20, null=True, blank=True)
+    phone=models.CharField(max_length=20, unique=True)
     password = models.CharField(max_length=128)
     password_changed = models.BooleanField(default=False)
     first_name = models.CharField(max_length=30, null=True, blank=True)
     last_name = models.CharField(max_length=150, null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_ENUM, default='customer')
     objects = UserManager()
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
     
     def __str__(self):
@@ -77,7 +77,7 @@ class UserAccount(AbstractUser):
     # @property
     # def is_superuser(self):
     #     return self.role == 'admin'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone']
+
   
 
 
