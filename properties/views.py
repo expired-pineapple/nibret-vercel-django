@@ -46,12 +46,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             filters['sold_out'] = status.lower() == 'sold'
             if not filters['sold_out']:
                 filters['rental'] = status.lower() == "rental" 
-        general_search = self.request.query_params.get("search")
-        if general_search:
-            queryset = queryset.filter(
-                    Q(location__name__icontains=general_search) | Q(name__icontains=general_search) |
-                    Q(description__icontains=general_search)| Q(type__icontains=general_search)
-                )
+
 
         if filters:
             queryset = queryset.filter(**filters)
@@ -78,31 +73,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def search(self, request):
         queryset = super().get_queryset()
 
+        filter = Q()
         property_type = request.data.get('type')
-        if property_type:
-            if isinstance(property_type, list):
-                queryset = queryset.filter(type__in=property_type)
-            else:
-                queryset = queryset.filter(type=property_type)
-
+        min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
+        max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
+        bedrooms = request.data.get('bedroom')
+        bathrooms = request.data.get('bathroom')
+        status = request.data.get('status')
         furnished = request.data.get('furnished')
-        if furnished is not None:
-            queryset = queryset.filter(furnished=request.data.get('furnished'))
-          
-
-        try:
-            min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
-            max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
-        except (ValueError, TypeError):
-            min_price = None
-            max_price = None
-
-        name = request.data.get('name')
         general_search = request.data.get('search')
-
-        if name:
-            queryset = queryset.filter(name__iexact=name)
-
         if general_search:
             queryset = queryset.filter(
                 Q(name__icontains=general_search) | 
@@ -110,39 +89,26 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 Q(location__name__icontains=general_search)
             )
 
-        if min_price is not None:
-            queryset = queryset.filter(price__gte=min_price)
-        if max_price is not None:
-            queryset = queryset.filter(price__lte=max_price)
-
-        bedroom = request.data.get('bedroom')
-        if bedroom and bedroom != "Any":
-            queryset = queryset.filter(bedroom__gte=int(bedroom))
-
-        bathroom = request.data.get('bathroom')
-        if bathroom and bathroom != "Any":
-            queryset = queryset.filter(bathroom__gte=int(bathroom))
-
-        area = request.data.get('area')
-        if area and area != "Any":
-            queryset = queryset.filter(area__gte=int(area))
-            
-        latitude = request.data.get('latitude')
-        longitude = request.data.get('longitude')
-        radius = request.data.get('radius', 10) 
+        if property_type and property_type != "All":
+            filter = Q(type = property_type)
         
-        if latitude and longitude:
-                radius_degrees = float(radius) / 111  # 1 degree ≈ 111km
-                lat = float(latitude)
-                lng = float(longitude)
-                        
-                queryset = queryset.filter(
-                    location__latitude__gte=lat - radius_degrees,
-                    location__latitude__lte=lat + radius_degrees,
-                    location__longitude__gte=lng - radius_degrees,
-                    location__longitude__lte=lng + radius_degrees
-                )
+        if min_price is not None:
+            filter &= Q(price__gte = min_price)
 
+        if max_price is not None:
+            filter &= Q(price__lte = max_price)
+        if bedrooms:
+            filter &= Q(bedrooms = bedrooms)
+        if bathrooms:
+            filter &= Q(bathrooms = bathrooms)
+        if status:
+            filter &= Q(sold_out = status.lower() == 'sold')
+            if not status.lower() == 'sold':
+                filter &= Q(rental = status.lower() == "rental")
+        if furnished:
+            filter &= Q(furnished = furnished)
+        if filter:
+            queryset = queryset.filter(filter)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     @action(detail=False, methods=['POST'])
