@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, Prefetch
+from authentication.permissions import CustomerPermission
 from properties.serializers import *
 from properties.permissions import *
 
@@ -240,7 +241,7 @@ class AuctionViewSet(viewsets.ModelViewSet):
 class WishlistViewSet(viewsets.ModelViewSet):
     queryset = Wishlist.objects.all() 
     serializer_class = WishListSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
@@ -300,6 +301,15 @@ class WishlistViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+    @action(detail=True, methods=['get'])
+    def customer_wishlists(self, requests, pk):
+        wishlists = Wishlist.objects.filter(user=pk)
+        data = self.get_serializer(wishlists, many=True).data
+        return  Response(
+                data, 
+                status=status.HTTP_200_OK
+            )
 
 class RequestTourViewset(viewsets.ModelViewSet):
     queryset = RequestedTour.objects.all() 
