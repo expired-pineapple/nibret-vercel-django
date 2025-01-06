@@ -241,10 +241,12 @@ class AuctionViewSet(viewsets.ModelViewSet):
 class WishlistViewSet(viewsets.ModelViewSet):
     queryset = Wishlist.objects.all() 
     serializer_class = WishListSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        if self.request.user.role == 'customer':
+            return self.queryset.filter(user=self.request.user)
+        return self.queryset.all()
 
     def create(self, request, *args, **kwargs):
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
@@ -302,9 +304,10 @@ class WishlistViewSet(viewsets.ModelViewSet):
             )
 
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], permission_classes=[CustomerPermission])
     def customer_wishlists(self, requests, pk):
-        wishlists = Wishlist.objects.filter(user=pk)
+        print( self.queryset.all())
+        wishlists = self.queryset.filter(user=pk)
         data = self.get_serializer(wishlists, many=True).data
         return  Response(
                 data, 
