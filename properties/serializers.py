@@ -1,3 +1,8 @@
+import requests
+import numpy
+import PIL.Image
+import blurhash
+
 from rest_framework import serializers
 
 from authentication.serializers import UserAccountSerialzer
@@ -111,6 +116,8 @@ class PropertySerializer(serializers.ModelSerializer):
         
         for image in image_data:
             image['property'] = property
+            im = PIL.Image.open(requests.get(image['image_url'], stream=True).raw)
+            image['blurHash'] = blurhash.encode(numpy.array(im.convert("RGB")))
             Image.objects.create(**image)
         
 
