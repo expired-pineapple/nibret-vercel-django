@@ -116,11 +116,8 @@ class PropertySerializer(serializers.ModelSerializer):
         
         for image in image_data:
             image['property'] = property
-            im = PIL.Image.open(requests.get(image['image_url'], stream=True).raw)
-            image['blurHash'] = blurhash.encode(numpy.array(im.convert("RGB")))
             Image.objects.create(**image)
-        
-
+                
         for loaner_data in loaners_data:
             loaner, _ = Loaners.objects.get_or_create(
                 name=loaner_data['name'],
