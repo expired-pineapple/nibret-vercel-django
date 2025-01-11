@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from math import radians, sin, cos, sqrt, atan2
 
 from authentication.models import UserAccount
 
@@ -14,7 +15,38 @@ class Location(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+    @staticmethod
+    def calculate_distance(lat1, lon1, lat2, lon2):
+        R = 6371  
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1-a))
+        distance = R * c
+
+        return distance
+
+    @classmethod
+    def find_nearby_places(cls, latitude, longitude, radius_km):
+        nearby_places = []
         
+        for place in cls.objects.all():
+            distance = cls.calculate_distance(
+                latitude, 
+                longitude,
+                place.latitude, 
+                place.longitude
+            )
+            if distance <= radius_km:
+                nearby_places.append(
+                   place)
+                
+        return nearby_places
 class Loaners(models.Model):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    logo = models.CharField(max_length=255, null=True, blank=True) 
