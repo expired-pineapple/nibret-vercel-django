@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -43,6 +44,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             filters['type'] = property_type
 
         status = self.request.query_params.get("status")
+        print(status)
         if status is not None:
             filters['sold_out'] = status.lower() == 'sold'
             if not filters['sold_out']:
@@ -72,46 +74,53 @@ class PropertyViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def search(self, request):
-        queryset = super().get_queryset()
+        try:
+            queryset = super().get_queryset()
 
-        filter = Q()
-        property_type = request.data.get('type')
-        min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
-        max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
-        bedrooms = request.data.get('bedroom')
-        bathrooms = request.data.get('bathroom')
-        status = request.data.get('status')
-        furnished = request.data.get('furnished')
-        general_search = request.data.get('search')
-        if general_search:
-            queryset = queryset.filter(
-                Q(name__icontains=general_search) | 
-                Q(description__icontains=general_search) | 
-                Q(location__name__icontains=general_search)
-            )
+            filter = Q()
+            print(request.data)
+            property_type = request.data.get('type')
+            min_price = float(request.data.get('min_price')) if request.data.get('min_price') is not None else None
+            max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
+            bedrooms = request.data.get('bedroom')
+            bathrooms = request.data.get('bathroom')
+            status = request.data.get('status')
+            furnished = request.data.get('furnished')
+            general_search = request.data.get('search')
+            if general_search:
+                queryset = queryset.filter(
+                    Q(name__icontains=general_search) | 
+                    Q(description__icontains=general_search) | 
+                    Q(location__name__icontains=general_search)
+                )
 
-        if property_type and property_type != "All":
-            filter = Q(type = property_type)
+            if property_type and property_type != "All":
+                filter = Q(type = property_type)
+            
+            if min_price is not None:
+                filter &= Q(price__gte = min_price)
+
+            if max_price is not None or max_price==0:
+                filter &= Q(price__lte = max_price)
+            if bedrooms:
+                filter &= Q(bedroom = bedrooms)
+            if bathrooms:
+                filter &= Q(bathroom = bathrooms)
+            if status:
+                filter &= Q(sold_out = status.lower() == 'sold')
+                if not status.lower() == 'sold':
+                    print("HERE")
+                    filter &= Q(rental = status.lower() == "rental")
+            if furnished:
+                filter &= Q(furnished = furnished)
+            if filter:
+                queryset = queryset.filter(filter)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
         
-        if min_price is not None:
-            filter &= Q(price__gte = min_price)
-
-        if max_price is not None:
-            filter &= Q(price__lte = max_price)
-        if bedrooms:
-            filter &= Q(bedrooms = bedrooms)
-        if bathrooms:
-            filter &= Q(bathrooms = bathrooms)
-        if status:
-            filter &= Q(sold_out = status.lower() == 'sold')
-            if not status.lower() == 'sold':
-                filter &= Q(rental = status.lower() == "rental")
-        if furnished:
-            filter &= Q(furnished = furnished)
-        if filter:
-            queryset = queryset.filter(filter)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        except: 
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
     @action(detail=False, methods=['POST'])
     def discount(self, request, pk=None):
         discount={"discount":self.request.data.get("discount")}
