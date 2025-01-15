@@ -1,13 +1,32 @@
-from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.db.models import Q, Prefetch
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
-from django.db.models import Q, Prefetch
+from geopy.distance import great_circle
+
 from authentication.permissions import CustomerPermission
 from properties.serializers import *
 from properties.permissions import *
+
+def get_latlng_bounderies(lat, lng, distance):
+    """
+    Return min/max lat/lng values for a distance around a latlng.
+    :lat:, :lng: the center of the area.
+    :distance: in km, the "radius" around the center point.
+    :returns: Two corner points of a square that countains the circle,
+              lat_min, lng_min, lat_max, lng_max.
+    """
+    gc = great_circle(kilometers=distance)
+    p0 = gc.destination((lat, lng), 0)
+    p90 = gc.destination((lat, lng), 90)
+    p180 = gc.destination((lat, lng), 180)
+    p270 = gc.destination((lat, lng), 270)
+
+    ret = p180[0], p270[1], p0[0], p90[1]
+    return ret
 
 
 class LocationViewSet(viewsets.ModelViewSet):
@@ -58,17 +77,35 @@ class PropertyViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def map(self, request):
         queryset = super().get_queryset()
-        upperLatitude = request.data.get('upperLatitude')
-        lowerLatitude = request.data.get('lowerLatitude')
+        # upperLatitude = request.data.get('upperLatitude')
+        # lowerLatitude = request.data.get('lowerLatitude')
         
-        upperLongitude = request.data.get('upperLongitude')
-        lowerLongitude =  request.data.get('lowerLongitude')
+        # upperLongitude = request.data.get('upperLongitude')
+        # lowerLongitude =  request.data.get('lowerLongitude')
+        # R = 6371  
+        # lat1, lon1, lat2, lon2 = map(radians, [upperLatitude, upperLongitude, lowerLatitude, lowerLongitude])
+        # dlat = lat2 - lat1
+        # dlon = lon2 - lon1
+        # a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        # c = 2 * atan2(sqrt(a), sqrt(1-a))
+        # distance = R * c
+
+        # print(distance)
+
+
+        longitude = float(request.data.get('longitude'))
+        latitude = float(request.data.get('latitude'))
+        radius = float(request.GET.get('radius', 5))
+        bounds = get_latlng_bounderies(latitude, longitude, radius)
+    
+        nearby_places = Location.find_nearby_places(latitude, longitude, radius)
+
         queryset = queryset.filter(
-                    Q(location__latitude__gte=lowerLatitude, location__longitude__gte=lowerLongitude) |
-                    Q(location__latitude__lte=upperLatitude,location__longitude__lte=upperLongitude)
+                    Q(location__latitude__gte=bounds[0], location__longitude__gte=bounds[1]) |
+                    Q(location__latitude__lte=bounds[2],location__longitude__lte=bounds[3])
                 )
-        
-        print(queryset)
+
+        queryset = queryset.filter(Q(location__in=nearby_places))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     

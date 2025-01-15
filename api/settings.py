@@ -126,9 +126,8 @@ REST_AUTH = {
     'REGISTER_SERIALIZER': 'authentication.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'authentication.serializers.UserAccountSerialzer',
     'USE_JWT': True,
+    'JWT_AUTH_HTTPONLY':False,
     'LOGOUT_ON_PASSWORD_CHANGE': True,
-    'JWT_AUTH_COOKIE': 'jwt-auth',
-    'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'SESSION_LOGIN': True,
 }
@@ -143,7 +142,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=15),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=0.5),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=20),
     'ROTATE_REFRESH_TOKENS': True,
     'UPDATE_LAST_LOGIN': True,
