@@ -1,6 +1,7 @@
+from io import BytesIO
 import requests
-import numpy
-import PIL.Image
+import numpy as np
+from PIL import Image as pil_image
 import blurhash
 
 from rest_framework import serializers
@@ -116,6 +117,11 @@ class PropertySerializer(serializers.ModelSerializer):
         
         for image in image_data:
             image['property'] = property
+            im = pil_image.open(BytesIO(requests.get(image['image_url']).content))
+            im.thumbnail((100,100))
+            numpy_image = np.array(im)
+            hash = blurhash.encode(numpy_image, components_x=4, components_y=3)
+            image['blur_hash'] = hash
             Image.objects.create(**image)
                 
         for loaner_data in loaners_data:
