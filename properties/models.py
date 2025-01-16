@@ -120,6 +120,21 @@ class LoanerProperty(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='loaners', null=True, blank=True)
     description = description = models.TextField(null=True, blank=True)
 
+class SearchHistory(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE,related_name='search_history')
+    search_term = models.TextField(null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
+    price = models.FloatField(null=True, blank=True)
+    bedroom = models.IntegerField(null=True, blank=True)
+    bathroom = models.IntegerField(null=True, blank=True)
+    area = models.FloatField(null=True, blank=True)
+    sold_out = models.BooleanField(null=True, blank=True)
+    is_store = models.BooleanField(null=True, blank=True)
+    type = models.CharField(max_length=255, null=True, blank=True)
+    move_in_date = models.DateTimeField(null=True, blank=True)
+    rental = models.BooleanField(null=True, blank=True)
+    furnished = models.BooleanField(null=True, blank=True)
 
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)

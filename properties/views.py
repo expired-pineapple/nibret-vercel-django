@@ -57,7 +57,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         filters = {}
-        
+ 
         property_type = self.request.query_params.get('type')
         if property_type and property_type != "All":
             filters['type'] = property_type
@@ -69,6 +69,13 @@ class PropertyViewSet(viewsets.ModelViewSet):
             if not filters['sold_out']:
                 filters['rental'] = status.lower() == "rental" 
 
+        general_search = self.request.query_params.get('search')
+        if general_search:
+                queryset = queryset.filter(
+                    Q(name__icontains=general_search) | 
+                    Q(description__icontains=general_search) | 
+                    Q(location__name__icontains=general_search)
+                )
 
         if filters:
             queryset = queryset.filter(**filters)
@@ -153,6 +160,18 @@ class PropertyViewSet(viewsets.ModelViewSet):
             if filter:
                 queryset = queryset.filter(filter)
             serializer = self.get_serializer(queryset, many=True)
+            if self.request.user.is_authenticated():
+                SearchHistory.objects.create(
+                    general_search=general_search,
+                    user = self.request.user,
+                    bedroom = bedrooms,
+                    bathroom = bathrooms,
+                    sold_out = status.lower() == 'sold',
+                    type = property_type,
+                    rental = status.lower() == "rental",
+                    furnished = furnished
+                )
+
             return Response(serializer.data)
         
         except: 
