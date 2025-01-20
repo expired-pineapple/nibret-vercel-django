@@ -160,7 +160,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             if filter:
                 queryset = queryset.filter(filter)
             serializer = self.get_serializer(queryset, many=True)
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 SearchHistory.objects.create(
                     general_search=general_search,
                     user = self.request.user,
