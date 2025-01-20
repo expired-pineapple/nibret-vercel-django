@@ -128,7 +128,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             max_price = float(request.data.get('max_price')) if request.data.get('max_price') is not None else None
             bedrooms = request.data.get('bedroom')
             bathrooms = request.data.get('bathroom')
-            status = request.data.get('status')
+            property_status = request.data.get('status')
             furnished = request.data.get('furnished')
             general_search = request.data.get('search')
             if general_search:
@@ -150,11 +150,11 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 filter &= Q(bedroom = bedrooms)
             if bathrooms:
                 filter &= Q(bathroom = bathrooms)
-            if status:
-                filter &= Q(sold_out = status.lower() == 'sold')
-                if not status.lower() == 'sold':
+            if property_status:
+                filter &= Q(sold_out = property_status.lower() == 'sold')
+                if not property_status.lower() == 'sold':
                     print("HERE")
-                    filter &= Q(rental = status.lower() == "rental")
+                    filter &= Q(rental = property_status.lower() == "rental")
             if furnished:
                 filter &= Q(furnished = furnished)
             if filter:
@@ -166,9 +166,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
                     user = self.request.user,
                     bedroom = bedrooms,
                     bathroom = bathrooms,
-                    sold_out = status.lower() == 'sold',
+                    sold_out = property_status.lower() == 'sold',
                     type = property_type,
-                    rental = status.lower() == "rental",
+                    rental = property_status.lower() == "rental",
                     furnished = furnished
                 )
 
