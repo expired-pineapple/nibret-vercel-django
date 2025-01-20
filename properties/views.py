@@ -166,9 +166,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
                     user = self.request.user,
                     bedroom = bedrooms,
                     bathroom = bathrooms,
-                    sold_out = property_status.lower() == 'sold',
+                    sold_out = property_status.lower() == 'sold' if property_status else False,
                     type = property_type,
-                    rental = property_status.lower() == "rental",
+                    rental = property_status.lower() == "rental" if property_status else False,
                     furnished = furnished
                 )
 
