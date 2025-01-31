@@ -11,6 +11,8 @@ router.register(r'auctions', AuctionViewSet)
 router.register(r'wishlist', WishlistViewSet)
 router.register(r'tour', RequestTourViewset)
 router.register(r'home-loan', HomeLoanViewSet)
+router.register(r'search-history', SearchHistoryViewset)
+
 
 urlpatterns = [
     path('', include(router.urls)),

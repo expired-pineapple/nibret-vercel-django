@@ -95,11 +95,13 @@ class LoanerPropertySerializer(serializers.ModelSerializer):
         fields = ['id', 'loaner', 'description']
 
 
+
 class PropertySerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     pictures = ImageSerializer(many=True)
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     is_wishlisted = serializers.SerializerMethodField() 
+    num_of_wishlist=serializers.IntegerField(allow_null=True)
     
     class Meta:
         model = Property
@@ -185,6 +187,12 @@ class WishListSerializer(serializers.ModelSerializer):
         model = Wishlist
         fields = '__all__'
 
+
+class SearchHistorySerializer(serializers.ModelSerializer):
+    properties = PropertySerializer(many=True) 
+    class Meta:
+        model = SearchHistory
+        fields="__all__"
 
 class ReviewSerializer(serializers.ModelSerializer):
       class Meta:
