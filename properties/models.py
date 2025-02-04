@@ -135,6 +135,10 @@ class SearchHistory(models.Model):
     move_in_date = models.DateTimeField(null=True, blank=True)
     rental = models.BooleanField(null=True, blank=True)
     furnished = models.BooleanField(null=True, blank=True)
+    # test= models.ManyToManyField(Property, related_name="appeared_on_search")
+    properties = models.ManyToManyField(Property, related_name="appeared_on_search")
+
+
 
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)

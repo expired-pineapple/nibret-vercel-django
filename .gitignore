@@ -9,4 +9,6 @@ media
 .env 
 .venv 
 env/ 
-migrations
+migrations/*
+
+

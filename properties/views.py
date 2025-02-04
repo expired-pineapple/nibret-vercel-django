@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Count, Sum
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -81,24 +81,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(**filters)
 
         return queryset
+
     @action(detail=False, methods=['post'])
     def map(self, request):
         queryset = super().get_queryset()
-        # upperLatitude = request.data.get('upperLatitude')
-        # lowerLatitude = request.data.get('lowerLatitude')
-        
-        # upperLongitude = request.data.get('upperLongitude')
-        # lowerLongitude =  request.data.get('lowerLongitude')
-        # R = 6371  
-        # lat1, lon1, lat2, lon2 = map(radians, [upperLatitude, upperLongitude, lowerLatitude, lowerLongitude])
-        # dlat = lat2 - lat1
-        # dlon = lon2 - lon1
-        # a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-        # c = 2 * atan2(sqrt(a), sqrt(1-a))
-        # distance = R * c
-
-        # print(distance)
-
 
         longitude = float(request.data.get('longitude'))
         latitude = float(request.data.get('latitude'))
@@ -115,7 +101,20 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(Q(location__in=nearby_places))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
+    @action(detail=False, methods=['get'], permission_classes=[CustomerPermission])
+    def admin(self,request):
+        try:
+            properties = Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).order_by('-num_of_wishlist')
+            wishlistedPropertiesCount=Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).aggregate(wishlistedPropertiesCount=Sum("num_of_wishlist"))
+            print(wishlistedPropertiesCount, "Count____________________")
+            serializer = self.get_serializer(properties, many=True)
+            mostWishlisted = self.get_serializer(properties.first())
+            return Response({"detail":{"properties":serializer.data, "mostWishlisted": mostWishlisted.data,**wishlistedPropertiesCount}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e) 
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
     @action(detail=False, methods=['post'])
     def search(self, request):
         try:
@@ -153,28 +152,31 @@ class PropertyViewSet(viewsets.ModelViewSet):
             if property_status:
                 filter &= Q(sold_out = property_status.lower() == 'sold')
                 if not property_status.lower() == 'sold':
-                    print("HERE")
                     filter &= Q(rental = property_status.lower() == "rental")
             if furnished:
                 filter &= Q(furnished = furnished)
-            if filter:
-                queryset = queryset.filter(filter)
+            queryset = queryset.filter(filter)
+            print(queryset)
             serializer = self.get_serializer(queryset, many=True)
+            print(self.request.user)
             if self.request.user.is_authenticated:
-                SearchHistory.objects.create(
-                    general_search=general_search,
+                search_history = SearchHistory.objects.create(
+                    search_term=general_search,
                     user = self.request.user,
                     bedroom = bedrooms,
                     bathroom = bathrooms,
-                    sold_out = property_status.lower() == 'sold' if property_status else False,
+                    sold_out = property_status.lower() == 'sold' if property_status else "",
                     type = property_type,
-                    rental = property_status.lower() == "rental" if property_status else False,
+                    rental = property_status.lower() == "rental" if property_status else "",
                     furnished = furnished
                 )
+                for q in queryset:
+                    search_history.properties.add(q.id)
 
             return Response(serializer.data)
         
-        except: 
+        except Exception as e:
+            print(e) 
             return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(detail=False, methods=['POST'])
@@ -184,7 +186,12 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         return Response({"detail": "Updated successfully"}, status=status.HTTP_200_OK)
     
-
+    @action(detail=False, methods=['GET'])
+    def property_count(self, request):
+        properties = Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).order_by('-num_of_wishlist')
+        print(properties.first())
+        serializer = self.get_serializer(properties, many=True)
+        return Response({"detail":serializer.data}, status=status.HTTP_200_OK)
     @action(detail=False, methods=['POST'])
     def sold_out(self, request, pk=None):
         property_id = self.request.data.get("id")
@@ -420,3 +427,19 @@ class RequestTourViewset(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+
+class SearchHistoryViewset(viewsets.ModelViewSet):
+    queryset = SearchHistory.objects.all() 
+    serializer_class = SearchHistorySerializer
+    permission_classes = [AdminReadOnly]
+
+    @action(detail=True, methods=['get'])
+    def customer(self, requests, pk):
+        print( self.queryset.all())
+        search_history = self.queryset.filter(user=pk)
+        data = self.get_serializer(search_history, many=True).data
+        return  Response(
+                data, 
+                status=status.HTTP_200_OK
+            )
