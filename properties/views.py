@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Prefetch, Count
+from django.db.models import Q, Prefetch, Count, Sum
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -101,7 +101,20 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(Q(location__in=nearby_places))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
+    @action(detail=False, methods=['get'], permission_classes=[CustomerPermission])
+    def admin(self,request):
+        try:
+            properties = Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).order_by('-num_of_wishlist')
+            wishlistedPropertiesCount=Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).aggregate(wishlistedPropertiesCount=Sum("num_of_wishlist"))
+            print(wishlistedPropertiesCount, "Count____________________")
+            serializer = self.get_serializer(properties, many=True)
+            mostWishlisted = self.get_serializer(properties.first())
+            return Response({"detail":{"properties":serializer.data, "mostWishlisted": mostWishlisted.data,**wishlistedPropertiesCount}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e) 
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
     @action(detail=False, methods=['post'])
     def search(self, request):
         try:
