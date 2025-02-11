@@ -9,15 +9,16 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from authentication.models import UserAccount
 
 class CustomRegisterSerializer(RegisterSerializer):
+    email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
     phone = serializers.CharField(max_length=10, required=True)
-    first_name = serializers.CharField(required=True, max_length=5)
+    first_name = serializers.CharField(required=True, max_length=50)
     last_name = serializers.CharField(required=True, max_length=100)
 
     def get_cleaned_data(self):
         return {
             'username': self.validated_data.get('username', ''),
             'password1': self.validated_data.get('password1', ''),
-            'email': self.validated_data.get('email', ''),
+            'email': self.validated_data.get('email', ''), 
             'phone': self.validated_data.get('phone', ''),
             'first_name': self.validated_data.get('first_name', ''),
             'last_name': self.validated_data.get('last_name', ''),
@@ -33,7 +34,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.first_name = self.cleaned_data.get('first_name')
         user.last_name = self.cleaned_data.get('last_name')
         user.role = self.cleaned_data.get('role')
-        
+
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
         return user
