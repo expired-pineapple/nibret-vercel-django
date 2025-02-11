@@ -443,3 +443,8 @@ class SearchHistoryViewset(viewsets.ModelViewSet):
                 data, 
                 status=status.HTTP_200_OK
             )
+
+class HomeOwnerViewSet(viewsets.ModelViewSet):
+    queryset=HomeOwners.objects.all()
+    serializer_class=HomeOwnersSerializer
+    permission_classes=[PropertyPermission]

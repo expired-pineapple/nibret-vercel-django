@@ -72,6 +72,15 @@ class Criteria(models.Model):
    description = models.TextField()
    loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria", null=True, blank=True)
 
+class HomeOwners(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    name=models.CharField()
+    type=models.CharField(default="Regular")
+    description=models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Property(models.Model):
 
@@ -98,6 +107,7 @@ class Property(models.Model):
     currency = models.CharField(max_length=255, default="ETB")
     discount = models.FloatField(null=True, blank=True, default=0)
     sold_out = models.BooleanField(default=False)
+    owner = models.ForeignKey(HomeOwners, on_delete=models.CASCADE, related_name='owned_properties', null=True, blank=True)
     is_store = models.BooleanField(default=False)
     type = models.CharField(max_length=255, null=True, blank=True)
     move_in_date = models.DateTimeField(null=True, blank=True)
