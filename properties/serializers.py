@@ -105,7 +105,7 @@ class PropertySerializer(serializers.ModelSerializer):
     pictures = ImageSerializer(many=True)
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     is_wishlisted = serializers.SerializerMethodField() 
-    num_of_wishlist=serializers.IntegerField(read_only=True, default=0)
+    num_of_wishlist=serializers.IntegerField(allow_null=True, read_only=True)
 
     class Meta:
         model = Property
