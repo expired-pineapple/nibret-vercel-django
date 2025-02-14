@@ -9,6 +9,10 @@ from rest_framework import serializers
 from authentication.serializers import UserAccountSerialzer
 from properties.models import *
 
+class HomeOwnersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeOwners
+        fields = "__all__"
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,7 +106,7 @@ class PropertySerializer(serializers.ModelSerializer):
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     is_wishlisted = serializers.SerializerMethodField() 
     num_of_wishlist=serializers.IntegerField(allow_null=True, read_only=True)
-    
+
     class Meta:
         model = Property
         fields = '__all__'
@@ -178,6 +182,8 @@ class PropertySerializer(serializers.ModelSerializer):
                 property=obj
             ).exists()
         return False
+
+
 
 class WishListSerializer(serializers.ModelSerializer):
     property = PropertySerializer(many=True) 

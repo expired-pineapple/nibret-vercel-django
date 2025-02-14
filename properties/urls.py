@@ -12,6 +12,7 @@ router.register(r'wishlist', WishlistViewSet)
 router.register(r'tour', RequestTourViewset)
 router.register(r'home-loan', HomeLoanViewSet)
 router.register(r'search-history', SearchHistoryViewset)
+router.register(r'home-owner', HomeOwnerViewSet)
 
 
 urlpatterns = [
