@@ -106,7 +106,7 @@ class PropertySerializer(serializers.ModelSerializer):
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     is_wishlisted = serializers.SerializerMethodField() 
     num_of_wishlist=serializers.IntegerField(allow_null=True, read_only=True)
-
+    premium = serializers.SerializerMethodField() 
     class Meta:
         model = Property
         fields = '__all__'
@@ -173,6 +173,10 @@ class PropertySerializer(serializers.ModelSerializer):
             instance.save()
         
         return instance
+    def get_premium(self, obj):
+        if obj.owner and obj.owner.type == "Premium":
+            return True
+        return False
 
     def get_is_wishlisted(self, obj):
         request = self.context.get('request')
