@@ -1,13 +1,8 @@
-from io import BytesIO
-import requests
-import numpy as np
-from PIL import Image as pil_image
-import blurhash
-
 from rest_framework import serializers
 
 from authentication.serializers import UserAccountSerialzer
 from properties.models import *
+from properties.utils import *
 
 class HomeOwnersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,14 +84,13 @@ class AuctionSerializer(serializers.ModelSerializer):
 class LoanerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loaners
-        fields = ['id', 'name', 'real_state_provided', 'logo', 'phone']
-
+        fields = "__all__"
 class LoanerPropertySerializer(serializers.ModelSerializer):
     loaner = LoanerSerializer() 
     
     class Meta:
         model = LoanerProperty
-        fields = ['id', 'loaner', 'description']
+        fields = "__all__"
 
 
 
@@ -112,34 +106,7 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        location_data = validated_data.pop('location')
-        image_data = validated_data.pop('pictures')
-        loaners_data = validated_data.pop('loaners', [])
-        
-        location = Location.objects.create(**location_data)
-        
-
-        property = Property.objects.create(location=location, **validated_data)
-        
-        for image in image_data:
-            image['property'] = property
-            im = pil_image.open(BytesIO(requests.get(image['image_url']).content))
-            im.thumbnail((100,100))
-            numpy_image = np.array(im)
-            hash = blurhash.encode(numpy_image, components_x=4, components_y=3)
-            image['blur_hash'] = hash
-            Image.objects.create(**image)
-                
-        for loaner_data in loaners_data:
-            loaner, _ = Loaners.objects.get_or_create(
-                name=loaner_data['name'],
-                defaults={
-                    'logo': loaner_data.get('logo', ''),
-                    'real_state_provided': loaner_data.get('real_state_provided', False)
-                }
-            )
-            property.loaners.add(loaner)
-        
+        property = create_property(validated_data)
         return property
 
     def update(self, instance, validated_data):
@@ -211,9 +178,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class HomeLoanSerializer(serializers.ModelSerializer):
-
-    loaner = LoanerSerializer()
+    loanerId=serializers.CharField(write_only=True)
+    loaner = LoanerSerializer(read_only=True)
     criteria = CriteriaSerializer(many=True)
+    property=PropertySerializer()
 
     class Meta:
         model = HomeLoan
@@ -221,10 +189,12 @@ class HomeLoanSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         criterias_data = validated_data.pop('criteria')
-        loaner = validated_data.pop('loaner')
+        loaner = validated_data.pop('loanerId')
+        property = validated_data.pop('property')
         criteria=[]
-        loaners=Loaners.objects.create(**loaner)
-        home_loan = HomeLoan.objects.create(loaner=loaners, **validated_data)
+        loaners=Loaners.objects.get(pk=loaner)
+        createdProperty=create_property(property)
+        home_loan = HomeLoan.objects.create(loaner=loaners, **validated_data, property=createdProperty)
         for c in criterias_data:
             cr = Criteria.objects.create(**c, loan=home_loan)
             criteria.append(cr)
