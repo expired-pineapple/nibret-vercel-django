@@ -4,6 +4,17 @@ from math import radians, sin, cos, sqrt, atan2
 
 from authentication.models import UserAccount
 
+
+class HomeOwners(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    name=models.CharField()
+    type=models.CharField(default="Regular")
+    description=models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
     
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -47,41 +58,6 @@ class Location(models.Model):
                    place)
                 
         return nearby_places
-class Loaners(models.Model):
-   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   logo = models.CharField(max_length=255, null=True, blank=True) 
-   name = models.CharField(max_length=255) 
-   real_state_provided = models.BooleanField(default=False)
-   phone = models.CharField(max_length=255, null=True, blank=True) 
-
-   def __str__(self) -> str:
-       return self.name
-
-
-class HomeLoan(models.Model):
-   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   name = models.CharField(max_length=255) 
-   description = models.TextField()
-   loaner = models.ForeignKey(Loaners, on_delete=models.CASCADE,  related_name="loaners")
-   
-   def __str__(self):
-        return self.name
-
-class Criteria(models.Model):
-   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   description = models.TextField()
-   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria", null=True, blank=True)
-
-class HomeOwners(models.Model):
-    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    name=models.CharField()
-    type=models.CharField(default="Regular")
-    description=models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
-
-
 class Property(models.Model):
 
     TYPE_CHOICES = [
@@ -122,6 +98,35 @@ class Property(models.Model):
     
     class Meta:
        ordering = ['-created_at']
+
+class Loaners(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   logo = models.CharField(max_length=255, null=True, blank=True) 
+   name = models.CharField(max_length=255) 
+   real_state_provided = models.BooleanField(default=False)
+   phone = models.CharField(max_length=255, null=True, blank=True) 
+
+   def __str__(self) -> str:
+       return self.name
+
+
+class HomeLoan(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   property=models.OneToOneField(Property, on_delete=models.CASCADE, related_name="property_loan", null=True, blank=True)
+   loan_amount = models.FloatField(default=0.0)
+   interest_percentage=models.FloatField(default=0.0)
+   loaner = models.ForeignKey(Loaners, on_delete=models.CASCADE,  related_name="loaners")
+   
+   def __str__(self):
+        return f"{self.loaner.name} - {self.property.name}"
+
+class Criteria(models.Model):
+   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   description = models.TextField()
+   loan = models.ForeignKey(HomeLoan, on_delete=models.CASCADE,  related_name="criteria", null=True, blank=True)
+
+
+
 
 
 class LoanerProperty(models.Model):

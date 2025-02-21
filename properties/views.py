@@ -36,7 +36,7 @@ class LocationViewSet(viewsets.ModelViewSet):
 
 class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
-    queryset = Property.objects.select_related(
+    queryset = Property.objects.filter(Q(property_loan=None)).select_related(
             'location',
            
             
@@ -88,7 +88,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         longitude = float(request.data.get('longitude'))
         latitude = float(request.data.get('latitude'))
-        radius = float(request.GET.get('radius', 5))
+        radius = float(request.GET.get('radius', 2.5))
         bounds = get_latlng_bounderies(latitude, longitude, radius)
     
         nearby_places = Location.find_nearby_places(latitude, longitude, radius)
@@ -106,7 +106,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         try:
             properties = Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).order_by('-num_of_wishlist')
             wishlistedPropertiesCount=Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).aggregate(wishlistedPropertiesCount=Sum("num_of_wishlist"))
-            print(wishlistedPropertiesCount, "Count____________________")
             serializer = self.get_serializer(properties, many=True)
             mostWishlisted = self.get_serializer(properties.first())
             return Response({"detail":{"properties":serializer.data, "mostWishlisted": mostWishlisted.data,**wishlistedPropertiesCount}}, status=status.HTTP_200_OK)
