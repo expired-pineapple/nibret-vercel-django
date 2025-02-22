@@ -100,6 +100,7 @@ class PropertySerializer(serializers.ModelSerializer):
     loaner_detail = LoanerPropertySerializer(source='loaners', many=True, read_only=True)
     is_wishlisted = serializers.SerializerMethodField() 
     num_of_wishlist=serializers.IntegerField(allow_null=True, read_only=True)
+    loan_amount = serializers.SerializerMethodField()
     premium = serializers.SerializerMethodField() 
     class Meta:
         model = Property
@@ -154,6 +155,13 @@ class PropertySerializer(serializers.ModelSerializer):
             ).exists()
         return False
 
+    def get_loan_amount(self, obj):
+        try:
+            return obj.property_loan.loan_amount
+        except:
+            return 0
+        
+
 
 
 class WishListSerializer(serializers.ModelSerializer):
@@ -181,7 +189,7 @@ class HomeLoanSerializer(serializers.ModelSerializer):
     loanerId=serializers.CharField(write_only=True)
     loaner = LoanerSerializer(read_only=True)
     criteria = CriteriaSerializer(many=True)
-    property=PropertySerializer()
+    property=PropertySerializer(read_only=True)
 
     class Meta:
         model = HomeLoan
