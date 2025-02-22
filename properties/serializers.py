@@ -101,7 +101,7 @@ class PropertySerializer(serializers.ModelSerializer):
     is_wishlisted = serializers.SerializerMethodField() 
     num_of_wishlist=serializers.IntegerField(allow_null=True, read_only=True)
     loan_amount = serializers.SerializerMethodField()
-
+    premium = serializers.SerializerMethodField() 
     class Meta:
         model = Property
         fields = '__all__'
@@ -141,6 +141,10 @@ class PropertySerializer(serializers.ModelSerializer):
             instance.save()
         
         return instance
+    def get_premium(self, obj):
+        if obj.owner and obj.owner.type == "Premium":
+            return True
+        return False
 
     def get_is_wishlisted(self, obj):
         request = self.context.get('request')
@@ -185,7 +189,7 @@ class HomeLoanSerializer(serializers.ModelSerializer):
     loanerId=serializers.CharField(write_only=True)
     loaner = LoanerSerializer(read_only=True)
     criteria = CriteriaSerializer(many=True)
-    # property=PropertySerializer(read_only=True)
+    property=PropertySerializer(read_only=True)
 
     class Meta:
         model = HomeLoan
@@ -194,7 +198,7 @@ class HomeLoanSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         criterias_data = validated_data.pop('criteria')
         loaner = validated_data.pop('loanerId')
-        property = validated_data.pop('newProperty')
+        property = validated_data.pop('property')
         criteria=[]
         loaners=Loaners.objects.get(pk=loaner)
         createdProperty=create_property(property)
