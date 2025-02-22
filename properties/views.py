@@ -101,6 +101,14 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(Q(location__in=nearby_places))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+   
+    @action(detail=True, methods=['GET'])
+    def loanable(self, request, pk=None):
+        property = get_object_or_404(Property, pk=pk)
+        serializer = self.get_serializer(property)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], permission_classes=[CustomerPermission])
     def admin(self,request):
         try:
