@@ -104,7 +104,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def premium(self, request):
-        queryset = Property.objects.filter(Q(owner_type='premium'))
+        queryset = Property.objects.filter(Q(owner__type='premium'))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
