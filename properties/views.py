@@ -102,7 +102,12 @@ class PropertyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-   
+    @action(detail=False, methods=['GET'])
+    def premium(self, request):
+        queryset = Property.objects.filter(Q(owner_type='premium'))
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['GET'])
     def loanable(self, request, pk=None):
         property = get_object_or_404(Property, pk=pk)
