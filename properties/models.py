@@ -18,7 +18,6 @@ class TranslateModel(models.Model):
 
 class HomeOwners(TranslateModel):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-   
     type=models.CharField(default="Regular")
 
     def __str__(self):

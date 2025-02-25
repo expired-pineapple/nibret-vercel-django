@@ -150,7 +150,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 )
 
             if property_type and property_type != "All":
-                filter = Q(type = property_type)
+                filter = Q(type__in = property_type)
             
             if min_price is not None:
                 filter &= Q(price__gte = min_price)
