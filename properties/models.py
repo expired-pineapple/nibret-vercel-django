@@ -4,25 +4,32 @@ from math import radians, sin, cos, sqrt, atan2
 
 from authentication.models import UserAccount
 
-
-class HomeOwners(models.Model):
-    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+class TranslateModel(models.Model):
     name=models.CharField()
-    type=models.CharField(default="Regular")
+    tr_name=models.CharField(null=True, blank=True)
     description=models.TextField(blank=True)
+    tr_description=models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True,null=True, blank=True)
+
+    class Meta:
+        abstract=True
+        ordering = ['-created_at']
+
+class HomeOwners(TranslateModel):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+   
+    type=models.CharField(default="Regular")
 
     def __str__(self):
         return self.name
 
 
     
-class Location(models.Model):
+class Location(TranslateModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    name = models.CharField(max_length=255) 
     longitude = models.DecimalField(max_digits=25, decimal_places=20)
     latitude = models.DecimalField(max_digits=25, decimal_places=20)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -58,7 +65,7 @@ class Location(models.Model):
                    place)
                 
         return nearby_places
-class Property(models.Model):
+class Property(TranslateModel):
 
     TYPE_CHOICES = [
         ('Plot Land', 'Plot Land'),
@@ -73,8 +80,6 @@ class Property(models.Model):
         ('Warehouse', 'Warehouse'),
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    name = models.CharField(max_length=255)
-    description = models.TextField()
     location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='property')
     price = models.FloatField()
     bedroom = models.IntegerField(null=True, blank=True, default=0)
@@ -90,19 +95,16 @@ class Property(models.Model):
     rental = models.BooleanField(default=False)
     furnished = models.BooleanField(default=False)
     created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
+  
     def __str__(self):
         return self.name
     
     class Meta:
        ordering = ['-created_at']
 
-class Loaners(models.Model):
+class Loaners(TranslateModel):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
    logo = models.CharField(max_length=255, null=True, blank=True) 
-   name = models.CharField(max_length=255) 
    real_state_provided = models.BooleanField(default=False)
    phone = models.CharField(max_length=255, null=True, blank=True) 
 
@@ -166,7 +168,7 @@ class Image(models.Model):
         return f"Image for {self.property.name}"
     
 
-class Auction(models.Model):
+class Auction(TranslateModel):
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('ACTIVE', 'Active'),
@@ -178,19 +180,15 @@ class Auction(models.Model):
     starting_bid = models.FloatField()
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    name = models.CharField(max_length=255)
-    description = models.TextField()
     location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='auctions')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    
 
     def __str__(self):
         return f"Auction for {self.name}"
 
     class Meta:
         verbose_name_plural = "Auctions"
-        ordering = ['-created_at']
 
 
 class Wishlist(models.Model):
@@ -201,9 +199,6 @@ class Wishlist(models.Model):
    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-       ordering = ['-created_at']
 
 class Reviews(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True) 
@@ -237,7 +232,4 @@ class RequestedTour(models.Model):
 
     def __str__(self):
         return f"Tour saved by {self.user.username}-{self.properties.name}"
-
-    class Meta:
-       ordering = ['-created_at']
 
