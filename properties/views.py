@@ -83,9 +83,26 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return queryset
 
     @action(detail=False, methods=['post'])
+    def map_bounds(self, request):
+        queryset = super().get_queryset()
+        min_latitude=float(request.data.get('min_latitude'))
+        min_longitude=float(request.data.get('min_longitude'))
+        max_longitude = float(request.data.get('max_longitude'))
+        max_latitude = float(request.data.get('max_latitude'))
+
+        queryset = queryset.filter(
+                    Q(location__latitude__gte=min_latitude, location__longitude__gte=min_longitude) |
+                    Q(location__latitude__lte=max_longitude,location__longitude__lte=max_longitude)
+                )
+
+        queryset = queryset.filter(Q(location__in=nearby_places))
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+    @action(detail=False, methods=['post'])
     def map(self, request):
         queryset = super().get_queryset()
-
         longitude = float(request.data.get('longitude'))
         latitude = float(request.data.get('latitude'))
         radius = float(request.GET.get('radius', 2.5))

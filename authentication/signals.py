@@ -8,6 +8,5 @@ from properties.models import Wishlist
 
 @receiver(post_save, sender=UserAccount)
 def create_user_wishlist(sender, instance, created, **kwargs):
-    print("Called")
     if created:
         Wishlist.objects.create(user=instance)

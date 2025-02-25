@@ -10,5 +10,5 @@ media
 .venv 
 env/ 
 migrations/*
-
+*/migrations/*
 
