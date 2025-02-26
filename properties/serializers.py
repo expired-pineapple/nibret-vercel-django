@@ -160,6 +160,17 @@ class PropertySerializer(serializers.ModelSerializer):
         except:
             return 0
 
+class PropertyDetailSerializer(PropertySerializer):
+    similarProperties = serializers.SerializerMethodField()
+    def get_similarProperties(self, obj):
+        properties = Property.objects.filter(
+            owner=obj.owner
+        ).exclude(
+            id=obj.id 
+        ).distinct()
+        
+        return PropertySerializer(properties, many=True).data
+
 class WishListSerializer(serializers.ModelSerializer):
     property = PropertySerializer(many=True) 
     auctions = AuctionSerializer(many=True)

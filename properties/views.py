@@ -45,7 +45,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
               'pictures',
         )
     # permission_classes = [PropertyPermission]
-
+    action_serializers = {
+        'retrieve': PropertyDetailSerializer,  
+        'list': PropertySerializer,  
+    }
     def get_serializer_class(self):
 
         if hasattr(self, 'action_serializers'):
@@ -98,14 +101,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(Q(location__in=nearby_places))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
-    
-    @action(detail=True, methods=['get'])
-    def you_might_also_like(self, request, pk=None):
-        property = get_object_or_404(Property, pk=pk)
-        properties = Property.objects.filter(owner=property.owner)
-        serializer = self.get_serializer(properties, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def map(self, request):
