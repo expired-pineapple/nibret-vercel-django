@@ -142,7 +142,7 @@ class PropertySerializer(serializers.ModelSerializer):
         
         return instance
     def get_premium(self, obj):
-        if obj.owner and obj.owner.type == "Premium":
+        if obj.owner and obj.owner.type.lower() == "premium":
             return True
         return False
 
