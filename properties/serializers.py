@@ -134,13 +134,12 @@ class PropertySerializer(serializers.ModelSerializer):
                     }
                 )
                 instance.loaners.add(loaner)
-            print("______________VAIDATED DATA______________________")
-            print(validated_data, "____________________________________")
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
             instance.save()
         
         return instance
+
     def get_premium(self, obj):
         if obj.owner and obj.owner.type.lower() == "premium":
             return True
@@ -160,9 +159,6 @@ class PropertySerializer(serializers.ModelSerializer):
             return obj.property_loan.loan_amount
         except:
             return 0
-        
-
-
 
 class WishListSerializer(serializers.ModelSerializer):
     property = PropertySerializer(many=True) 
