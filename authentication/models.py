@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.contrib.auth.models import  PermissionsMixin, BaseUserManager, AbstractUser
@@ -89,8 +91,6 @@ class ActivtyLog(models.Model):
     remarks = models.TextField(blank=True, null=True)
     status = models.CharField(choices=ACTION_STATUS, max_length=7, default=SUCCESS)
     data = models.JSONField(default=dict)
-
-    # for generic relations
     content_type = models.ForeignKey(
         ContentType, models.SET_NULL, blank=True, null=True
     )
@@ -99,3 +99,16 @@ class ActivtyLog(models.Model):
 
     def __str__(self) -> str:
         return f"{self.action_type} by {self.actor} on {self.action_time}"
+
+
+
+class NotificationClient(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    fcm_token=models.TextField(unique=True)
+    user = models.OneToOneField(UserAccount, blank=True,null=True, on_delete=models.CASCADE, related_name="user_notification_client")
+
+
+class Notification(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    message=models.TextField()
+    user = models.ForeignKey(UserAccount, blank=True,null=True, on_delete=models.CASCADE, related_name="notifications")

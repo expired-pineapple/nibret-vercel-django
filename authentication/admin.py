@@ -3,3 +3,5 @@ from .models import *
 
 # Register your models here.
 admin.site.register(UserAccount)
+admin.site.register(NotificationClient)
+admin.site.register(Notification)

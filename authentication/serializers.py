@@ -6,7 +6,7 @@ from allauth.account.utils import setup_user_email
 
 from dj_rest_auth.registration.serializers import RegisterSerializer
 
-from authentication.models import UserAccount
+from authentication.models import UserAccount, NotificationClient
 
 class CustomRegisterSerializer(RegisterSerializer):
     email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
@@ -48,3 +48,9 @@ class UserAccountSerialzer(serializers.ModelSerializer):
 
     def get_date_joined(self, obj):
         return obj.date_joined.strftime("%Y-%m-%d")
+
+
+class NotificationClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=NotificationClient
+        fields='__all__'
