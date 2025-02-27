@@ -1,23 +1,17 @@
 import os
 
 import blurhash
-# import google
 import json
-# import firebase_admin
 import numpy as np
 import requests
 
-# from firebase_admin import credentials
-# from google.oauth2 import service_account
 from io import BytesIO
 from PIL import Image as pil_image
-
+from dotenv import load_dotenv
 from properties.models import *
 
-# here = os.path.dirname(os.path.abspath(__file__))
-# filename = os.path.join(here, 'service-account.json')
-# SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
 
+load_dotenv()
 
 def create_property(validated_data):
         location_data = validated_data.pop('location')
@@ -50,26 +44,17 @@ def create_property(validated_data):
         
         return property
 
+def notify_user(message):
+  resp = requests.post("https://fcm.googleapis.com/v1/projects/nibret-ca62c/messages:send", 
+    headers={
+        "Authorization": f"Bearer {os.getenv("FCM_ACCESS_TOKEN")}"
+    },
+    data=json.dumps(message)
+  )
 
-
-# def _get_access_token():
-#   credentials = service_account.Credentials.from_service_account_file(
-#     filename, scopes=SCOPES)
-#   request = google.auth.transport.requests.Request()
-#   credentials.refresh(request)
-#   return credentials.token
-
-# def notify_user(message):
-#   resp = requests.post("https://fcm.googleapis.com/v1/projects/nibret-ca62c/messages:send", 
-#     headers={
-#         "Authorization": "Bearer " + _get_access_token()
-#     },
-#     data=json.dumps(message)
-#   )
-
-#   if resp.status_code == 200:
-#     print('Message sent to Firebase for delivery, response:')
-#     print(resp.text)
-#   else:
-#     print('Unable to send message to Firebase')
-#     print(resp.text)
+  if resp.status_code == 200:
+    print('Message sent to Firebase for delivery, response:')
+    print(resp.text)
+  else:
+    print('Unable to send message to Firebase')
+    print(resp.text)
