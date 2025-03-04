@@ -77,6 +77,7 @@ class Property(TranslateModel):
         ('Condominium', 'Condominium'),
         ('Office Space', 'Office Space'),
         ('Warehouse', 'Warehouse'),
+        ('Luxury Apartment', 'Luxury Apartment')
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='property')

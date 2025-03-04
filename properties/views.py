@@ -127,6 +127,33 @@ class PropertyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+    @action(detail=False, methods=['GET'])
+    def chart_data(self, request):
+        try:
+            labels=[
+                'Luxury Apartment',
+                'Apartment',
+                'Office Space',
+                'Single Family',
+                'Condominium', 
+                'Plot Land',
+                'Penthouse',
+                'Townhouse',
+                'Villa',
+                'Commercial',
+                'Warehouse'
+            ]
+            series = []
+            for label in labels:
+                series.append(len(Property.objects.filter(type=label)))
+
+
+            return Response({"detail":{"labels":labels, "series":series}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e) 
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=True, methods=['GET'])
     def loanable(self, request, pk=None):
         property = get_object_or_404(Property, pk=pk)
