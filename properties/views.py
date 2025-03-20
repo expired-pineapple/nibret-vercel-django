@@ -7,7 +7,82 @@ from django.db.models import Q, Prefetch
 from properties.serializers import *
 from properties.permissions import *
 
+import qrcode
+from PIL import Image
 
+def generate_qr_with_logo(data, logo_path, output_path):
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # High error correction
+        box_size=20,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+
+    # Load and resize logo
+    logo = Image.open(logo_path)
+    logo_width = 100  # Adjust based on QR size (20-25% of QR width)
+    logo_height = 100
+    logo = logo.resize((logo_width, logo_height))
+
+    # Calculate position to center the logo
+    img_width, img_height = img.size
+    pos = (
+        (img_width - logo_width) // 2,
+        (img_height - logo_height) // 2
+    )
+
+    # Overlay logo on QR code
+    img.paste(logo, pos)
+    img.save(output_path)
+    return output_path
+
+# Usage
+generate_qr_with_logo(
+    data="https://your-property-url.com",
+    logo_path="company_logo.png",
+    output_path="property_qr.png"
+)import qrcode
+from PIL import Image
+
+def generate_qr_with_logo(data, logo_path, output_path):
+    
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # High error correction
+        box_size=20,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+
+    
+    logo = Image.open(logo_path)
+    logo_width = 100  
+    logo_height = 100
+    logo = logo.resize((logo_width, logo_height))
+
+    
+    img_width, img_height = img.size
+    pos = (
+        (img_width - logo_width) // 2,
+        (img_height - logo_height) // 2
+    )
+
+    
+    img.paste(logo, pos)
+    img.save(output_path)
+    return output_path
+
+generate_qr_with_logo(
+    data="https://your-property-url.com",
+    logo_path="company_logo.png",
+    output_path="property_qr.png"
+)
 class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
