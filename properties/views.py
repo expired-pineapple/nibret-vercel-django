@@ -11,6 +11,13 @@ from authentication.permissions import CustomerPermission
 from properties.serializers import *
 from properties.permissions import *
 
+import qrcode
+import requests
+from io import BytesIO
+from PIL import Image as pil_image
+
+
+
 def get_latlng_bounderies(lat, lng, distance):
     """
     Return min/max lat/lng values for a distance around a latlng.
@@ -27,6 +34,38 @@ def get_latlng_bounderies(lat, lng, distance):
 
     ret = p180[0], p270[1], p0[0], p90[1]
     return ret
+
+
+def generate_qr_with_logo(data, output_path):
+    
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=20,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")     
+    logo = pil_image.open(BytesIO(requests.get("https://res.cloudinary.com/ddbdbuuqw/image/upload/v1742457387/lr2yfovu3osnbn284pdi.png").content))
+    
+    logo_width = 100  
+    logo_height = 100
+    white_overlay=pil_image.new("RGB",(logo_width, logo_height), 'white' )
+    logo = logo.resize((logo_width, logo_height))
+
+    
+    img_width, img_height = img.size
+    pos = (
+        (img_width - logo_width) // 2,
+        (img_height - logo_height) // 2
+    )
+
+    img.paste(white_overlay, pos)
+    img.paste(logo, pos)
+    img.save(output_path)
+    return output_path
+
 
 
 class LocationViewSet(viewsets.ModelViewSet):
@@ -84,7 +123,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(**filters)
 
         return queryset
-
+    @action(detail=False, methods=['GET'])
+    def qr_generate(self, request):
+        qr=generate_qr_with_logo('https://nibret.com', 'qr.png')
+        return Response(qr)
     @action(detail=False, methods=['post'])
     def map_bounds(self, request):
         queryset = super().get_queryset()
