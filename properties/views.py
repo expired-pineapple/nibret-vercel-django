@@ -179,18 +179,38 @@ class PropertyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(property)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     @action(detail=False, methods=['get'], permission_classes=[CustomerPermission])
-    def admin(self,request):
+    def admin(self, request):
         try:
-            properties = Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).order_by('-num_of_wishlist')
-            wishlistedPropertiesCount=Property.objects.annotate(num_of_wishlist = Count("property_wishlist")).aggregate(wishlistedPropertiesCount=Sum("num_of_wishlist"))
-            serializer = self.get_serializer(properties, many=True)
-            mostWishlisted = self.get_serializer(properties.first())
-            return Response({"detail":{"properties":serializer.data, "mostWishlisted": mostWishlisted.data,**wishlistedPropertiesCount}}, status=status.HTTP_200_OK)
+            properties = Property.objects.annotate(
+                num_of_wishlist=Count("property_wishlist")
+            ).order_by('-num_of_wishlist')
+            first_property = properties.first()
+            total_count = properties.aggregate(
+                wishlistedPropertiesCount=Sum("num_of_wishlist")
+            )
+
+            page = self.paginate_queryset(properties)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                most_wishlisted = self.get_serializer(first_property)
+                return self.get_paginated_response({
+                    "properties": serializer.data,
+                    "mostWishlisted": most_wishlisted.data,
+                    **total_count
+                })
+                
+            return Response({"detail": "Invalid pagination"}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+                        
         except Exception as e:
-            print(e) 
-            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            print(e)  
+            return Response(
+                {"detail": "Something went wrong."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
 
     @action(detail=False, methods=['post'])
     def search(self, request):
