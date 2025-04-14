@@ -151,3 +151,8 @@ JWT_AUTH_SECURE = False
 JWT_AUTH_SAMESITE = 'Lax'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = [
+    'https://nibret-admin.vercel.app',
+    'https://nibret.com'
+]
