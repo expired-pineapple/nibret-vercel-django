@@ -116,8 +116,6 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none" 
 AUTH_USER_MODEL = 'authentication.UserAccount'
 ACCOUNT_ADAPTER = 'authentication.adapter.CustomAccountAdapter'
 
