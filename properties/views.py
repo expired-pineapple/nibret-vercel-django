@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, Prefetch, Count, Sum
+from django.db.models.functions import TruncMonth
+
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -126,6 +128,23 @@ class PropertyViewSet(viewsets.ModelViewSet):
         queryset = Property.objects.filter(Q(owner__type__in=['premium', 'Premium']))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'])
+    def monthly_data(self, request):
+        try:
+            monthly_data = Property.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(count=Count('id')).order_by('month')
+
+            labels = []
+            series = []
+            
+            for data in monthly_data:
+                labels.append(data['month'].strftime('%B %Y'))
+                series.append(data['count'])
+
+            return Response({"detail": {"labels": labels, "series": series}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
     @action(detail=False, methods=['GET'])

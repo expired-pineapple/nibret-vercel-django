@@ -1,4 +1,7 @@
+from django.db.models.functions import TruncMonth
+
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
@@ -18,6 +21,23 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = UserAccount.objects.filter(role='customer')
     serializer_class = UserAccountSerialzer
     permission_classes = [CustomerPermission]
+
+    @action(detail=False, methods=['GET'])
+    def monthly_data(self, request):
+        try:
+            monthly_data = UserAccount.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(count=Count('id')).order_by('month')
+
+            labels = []
+            series = []
+            
+            for data in monthly_data:
+                labels.append(data['month'].strftime('%B %Y'))
+                series.append(data['count'])
+
+            return Response({"detail": {"labels": labels, "series": series}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"detail": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class NotificationClientViewSet(viewsets.ModelViewSet):
