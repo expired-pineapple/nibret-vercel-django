@@ -6,9 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-=cldztbc4jg&xl0!x673!*v2_=p$$eu)=7*f#d0#zs$44xx-h^'
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app','localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app','localhost', 'api.nibret.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -116,10 +116,10 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none" 
 AUTH_USER_MODEL = 'authentication.UserAccount'
 ACCOUNT_ADAPTER = 'authentication.adapter.CustomAccountAdapter'
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none" 
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'authentication.serializers.CustomRegisterSerializer',
@@ -151,3 +151,8 @@ JWT_AUTH_SECURE = False
 JWT_AUTH_SAMESITE = 'Lax'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = [
+    'https://nibret-admin.vercel.app',
+    'https://nibret.com'
+]
