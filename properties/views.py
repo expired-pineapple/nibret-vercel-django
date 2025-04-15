@@ -107,7 +107,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
             filters['type'] = property_type
 
         status = self.request.query_params.get("status")
-        print(status)
         if status is not None:
             filters['sold_out'] = status.lower() == 'sold'
             if not filters['sold_out']:
