@@ -1,4 +1,5 @@
 from django.db.models.functions import TruncMonth
+from django.db.models import Count
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -25,7 +26,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'])
     def monthly_data(self, request):
         try:
-            monthly_data = UserAccount.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(count=Count('id')).order_by('month')
+            print(request)
+            monthly_data = UserAccount.objects.annotate(month=TruncMonth('date_joined')).values('month').annotate(count=Count('id')).order_by('month')
 
             labels = []
             series = []
