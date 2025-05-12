@@ -36,7 +36,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     serializer_class = LocationSerializer
     # permission_classes = [IsAuthenticated]
 
-class PropertyViewSet(viewsets.ModelViewSet):
+class PropertyViewSet(UserLogMixin, viewsets.ModelViewSet):
     serializer_class = PropertySerializer
     queryset = Property.objects.filter(Q(property_loan=None)).select_related(
             'location',
@@ -46,11 +46,19 @@ class PropertyViewSet(viewsets.ModelViewSet):
             
               'pictures',
         )
+    log_message = "Property interaction"
     # permission_classes = [PropertyPermission]
     action_serializers = {
         'retrieve': PropertyDetailSerializer,  
         'list': PropertySerializer,  
     }
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        if request.user.is_authenticated:
+            self.get_object().increment_impression()
+        return response
+        
     def get_serializer_class(self):
 
         if hasattr(self, 'action_serializers'):

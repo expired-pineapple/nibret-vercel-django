@@ -95,12 +95,19 @@ class Property(TranslateModel):
     rental = models.BooleanField(default=False)
     furnished = models.BooleanField(default=False)
     created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='saved_properties', null=True, blank=True)
-  
+    impression_count = models.PositiveIntegerField(default=0, editable=False)
+
+    def increment_impression(self):
+        self.impression_count = models.F('impression_count') + 1
+        self.save(update_fields=['impression_count'])
+
     def __str__(self):
         return self.name
     
     class Meta:
        ordering = ['-created_at']
+
+
 
 class Loaners(TranslateModel):
    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
@@ -233,3 +240,33 @@ class RequestedTour(models.Model):
     def __str__(self):
         return f"Tour saved by {self.user.username}-{self.properties.name}"
 
+
+
+class ActivityLog(models.Model):
+ 
+    ACTION_TYPES = (
+        (READ, 'View'),
+        (CREATE, 'Create'),
+        (UPDATE, 'Update'),
+        (DELETE, 'Delete'),
+    )
+    
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='activities'
+    )
+    action_type = models.CharField(max_length=15, choices=ACTION_TYPES)
+    status = models.CharField(max_length=7, choices=[(SUCCESS, 'Success'), (FAILED, 'Failed')])
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)
+    object_id = models.UUIDField(null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['-timestamp']),
+        ]
