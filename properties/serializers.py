@@ -1,6 +1,6 @@
 from rest_framework import serializers
-
-from authentication.serializers import UserAccountSerialzer
+from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
 from properties.models import *
 from properties.utils import *
 
@@ -171,6 +171,12 @@ class PropertyDetailSerializer(PropertySerializer):
         
         return PropertySerializer(properties, many=True).data
 
+    # def retrieve(self, request, *args, **kwargs):
+    #     response = super().retrieve(request, *args, **kwargs)
+    #     if request.user.is_authenticated:
+    #         self.get_object().increment_impression()
+    #     return response
+
 class WishListSerializer(serializers.ModelSerializer):
     property = PropertySerializer(many=True) 
     auctions = AuctionSerializer(many=True)
@@ -217,8 +223,76 @@ class HomeLoanSerializer(serializers.ModelSerializer):
     
 
 class RequestTourSerializer(serializers.ModelSerializer):
-    user = UserAccountSerialzer(read_only=True)
     properties = PropertySerializer()
     class Meta:
         model = RequestedTour
         fields = '__all__'
+
+class ContentTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContentType
+        fields = ['app_label', 'model']
+        read_only_fields = ['app_label', 'model']
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    actor = serializers.StringRelatedField()
+    action_type = serializers.ChoiceField(choices=ActivityLog.ACTION_TYPES, source='get_action_type_display', read_only=True)
+    # status = serializers.ChoiceField(choices=ActivityLog.STATUS_CHOICES, source='get_status_display', read_only=True)
+    content_type = ContentTypeSerializer(read_only=True)
+    content_object = serializers.SerializerMethodField()
+    content_object_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ActivityLog
+        fields = [
+            'id',
+            'actor',
+            'action_type',
+            'status',
+            'timestamp',
+            'content_type',
+            'content_object',
+            'content_object_url'
+        ]
+        read_only_fields = fields
+
+    def get_content_object(self, obj):
+        """String representation of related object"""
+        if obj.content_object:
+            return str(obj.content_object)
+        return None
+
+    def get_content_object_url(self, obj):
+        """URL to related object detail view if available"""
+        if obj.content_object and hasattr(obj.content_object, 'get_absolute_url'):
+            return obj.content_object.get_absolute_url()
+        
+        # Fallback to Django REST framework's URL lookup
+        try:
+            if obj.content_object:
+                model_name = obj.content_type.model
+                app_label = obj.content_type.app_label
+                return reverse(
+                    f'{app_label}:{model_name}-detail',
+                    kwargs={'pk': obj.object_id},
+                    request=self.context.get('request')
+                )
+        except:
+            return None
+        return None
+
+    def to_representation(self, instance):
+        """Custom representation with content type details"""
+        rep = super().to_representation(instance)
+        
+        # Add human-readable content type information
+        if instance.content_type:
+            rep['content_type'] = {
+                'app_label': instance.content_type.app_label,
+                'model': instance.content_type.model,
+                'name': instance.content_type.name
+            }
+        else:
+            rep['content_type'] = None
+            
+        return rep

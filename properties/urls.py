@@ -14,7 +14,7 @@ router.register(r'home-loan', HomeLoanViewSet)
 router.register(r'search-history', SearchHistoryViewset)
 router.register(r'home-owner', HomeOwnerViewSet)
 router.register(r'loaners', LoanersViewSet)
-
+router.register(r'impressions', ActivityLogViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -3,7 +3,15 @@ import uuid
 import logging
 from django.conf import settings
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.exceptions import ValidationError
+
+from properties.models import ActivityLog
+
+READ = 'read'
+CREATE = 'create'
+UPDATE = 'update'
+DELETE = 'delete'
 
 class UserLogMixin:
     """
@@ -44,8 +52,7 @@ class UserLogMixin:
         log_data = {
             "actor": actor,
             "action_type": self._get_action_type(request),
-            "status": status,
-            "remarks": self.get_log_message(request),
+            "status": status
         }
 
         try:
@@ -58,11 +65,11 @@ class UserLogMixin:
             log_data["content_type"] = None
 
         # Track impressions for successful detail views
-        if log_data["action_type"] == READ and self.action == 'retrieve':
-            ActivtyLog.objects.create(**log_data)
+        if log_data["action_type"].lower() == READ and self.action == 'retrieve':
+            ActivityLog.objects.create(**log_data)
         # Track other CRUD actions
-        elif log_data["action_type"] != READ:
-            ActivtyLog.objects.create(**log_data)
+        elif log_data["action_type"].lower() != READ:
+            ActivityLog.objects.create(**log_data)
 
     def finalize_response(self, request, *args, **kwargs):
         response = super().finalize_response(request, *args, **kwargs)

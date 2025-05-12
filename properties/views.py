@@ -92,12 +92,6 @@ class PropertyViewSet(UserLogMixin, viewsets.ModelViewSet):
         'retrieve': PropertyDetailSerializer,  
         'list': PropertySerializer,  
     }
-
-    def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        if request.user.is_authenticated:
-            self.get_object().increment_impression()
-        return response
         
     def get_serializer_class(self):
 
@@ -595,3 +589,26 @@ class HomeOwnerViewSet(viewsets.ModelViewSet):
     queryset=HomeOwners.objects.all()
     serializer_class=HomeOwnersSerializer
     permission_classes=[PropertyPermission]
+
+class ActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ActivityLog.objects.all().select_related('content_type', 'actor')
+    serializer_class = ActivityLogSerializer
+    filterset_fields = ['action_type', 'status', 'content_type']
+    ordering_fields = ['timestamp']
+    
+    def get_queryset(self):
+        """Optional: Filter by current user"""
+        qs = super().get_queryset()
+        if self.request.user.is_authenticated:
+            return qs.filter(actor=self.request.user)
+        return qs.none()
+
+    @action(detail=True, methods=['get'])
+    def customer(self, requests, pk):
+        print( self.queryset.all())
+        impressions = self.queryset.filter(actor=pk)
+        data = self.get_serializer(impressions, many=True).data
+        return  Response(
+                data, 
+                status=status.HTTP_200_OK
+            )
