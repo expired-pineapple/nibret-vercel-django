@@ -3,6 +3,9 @@ from django.db import models
 from math import radians, sin, cos, sqrt, atan2
 
 from authentication.models import UserAccount
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.conf import settings
 
 class TranslateModel(models.Model):
     name=models.CharField()
@@ -125,6 +128,12 @@ class HomeLoan(models.Model):
    loan_amount = models.FloatField(default=0.0)
    interest_percentage=models.FloatField(default=0.0)
    loaner = models.ForeignKey(Loaners, on_delete=models.CASCADE,  related_name="loaners")
+   impression_count = models.PositiveIntegerField(default=0, editable=False)
+    
+   def increment_impression(self):
+        self.impression_count = models.F('impression_count') + 1
+        self.save(update_fields=['impression_count'])
+
    
    def __str__(self):
         return f"{self.loaner.name} - {self.property.name}"
@@ -189,6 +198,12 @@ class Auction(TranslateModel):
     end_date = models.DateTimeField()
     location = models.OneToOneField(Location, on_delete=models.CASCADE, related_name='auctions')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    impression_count = models.PositiveIntegerField(default=0, editable=False)
+
+    def increment_impression(self):
+        self.impression_count = models.F('impression_count') + 1
+        self.save(update_fields=['impression_count'])
+
     
 
     def __str__(self):
@@ -245,10 +260,10 @@ class RequestedTour(models.Model):
 class ActivityLog(models.Model):
  
     ACTION_TYPES = (
-        (READ, 'View'),
-        (CREATE, 'Create'),
-        (UPDATE, 'Update'),
-        (DELETE, 'Delete'),
+        ('READ', 'View'),
+        ('CREATE', 'Create'),
+        ('UPDATE', 'Update'),
+        ('DELETE', 'Delete'),
     )
     
     actor = models.ForeignKey(
@@ -258,7 +273,7 @@ class ActivityLog(models.Model):
         related_name='activities'
     )
     action_type = models.CharField(max_length=15, choices=ACTION_TYPES)
-    status = models.CharField(max_length=7, choices=[(SUCCESS, 'Success'), (FAILED, 'Failed')])
+    status = models.CharField(max_length=7, choices=[('SUCCESS', 'Success'), ('FAILED', 'Failed')])
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)
     object_id = models.UUIDField(null=True)
     content_object = GenericForeignKey('content_type', 'object_id')

@@ -12,6 +12,7 @@ from geopy.distance import great_circle
 from authentication.permissions import CustomerPermission
 from properties.serializers import *
 from properties.permissions import *
+from properties.mixin import *
 
 import qrcode
 import requests

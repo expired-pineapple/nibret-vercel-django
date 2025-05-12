@@ -2,7 +2,6 @@ from math import radians, sin, cos, sqrt, atan2
 import uuid
 import logging
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
@@ -36,7 +35,7 @@ class UserLogMixin:
         }
 
     def _write_log(self, request, response):
-        status = SUCCESS if response.status_code < 400 else FAILED
+        status = 'SUCCESS' if response.status_code < 400 else 'FAILED'
         actor = request.user if request.user.is_authenticated else None
         
         if not actor or getattr(settings, "TESTING", False):
